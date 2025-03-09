@@ -3,6 +3,8 @@
 from telebot import types, TeleBot
 from config import TOKEN
 
+USERS = {}
+
 bot = TeleBot(TOKEN)
 
 """
@@ -21,7 +23,7 @@ def start(message):
 """
 
 """
- # НАЧАЛО| функция Help для возврата в начало
+ # НАЧАЛО| функция Help для получения информации
  """
 @bot.message_handler(commands=["help"])
 def information(message):
@@ -74,10 +76,60 @@ def information(message):
                      
                     """,  reply_markup=murkup)
 """
-КОНЕЦ| функция Help для возврата в начало
+КОНЕЦ| функция Help для получения информации
 """
 
 
+"""
+НАЧАЛО| функция register для регистрации нового пользователя
+"""
+@bot.message_handler(commands=['register']) 
+def register(message):
 
+    bot.send_message(message.chat.id, "Для регистрации введи имя пользователя")
+
+    bot.register_next_step_handler(message, register_username)
+
+def register_username(message):
+    global username
+    username = message.text
+    bot.send_message(message.chat.id, "А теперь придумай пароль")
+
+    bot.register_next_step_handler(message, register_password)
+
+def register_password(message):
+    password = message.text
+    USERS[username] = password
+    bot.send_message(message.chat.id, "Поздравляю! Ты успешно зарегистрировался")
+"""
+КОНЕЦ| функция register для регистрации нового пользователя
+"""
+
+"""
+НАЧАЛО| функция login для авторизации пользователя
+"""
+@bot.message_handler(commands=['login']) 
+def login(message):
+
+    bot.send_message(message.chat.id, "Для входа введи имя пользователя")
+
+    bot.register_next_step_handler(message, login_username)
+
+def login_username(message):
+    global username
+    username = message.text
+    bot.send_message(message.chat.id, "А теперь вспомни пароль")
+
+    bot.register_next_step_handler(message, login_password)
+
+def login_password(message):
+    password = message.text
+    USERS[username] = password
+    for i in USERS:
+        print(i)
+    bot.send_message(message.chat.id, "Поздравляю! Ты успешно вошел")
+"""
+КОНЕЦ| функция login для авторизации пользователя
+"""
 
 bot.infinity_polling()
