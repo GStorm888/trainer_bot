@@ -2,8 +2,18 @@
 # import telebot
 from telebot import types, TeleBot
 from config import TOKEN
+from data_base import Database
 
 USERS = {}
+
+
+Database.cursor.execute('SELECT * FROM Users')
+users = Database.cursor.fetchall()
+
+# Выводим результаты
+for user in users:
+  print(user)
+
 
 bot = TeleBot(TOKEN)
 
@@ -98,9 +108,11 @@ def register_username(message):
     bot.register_next_step_handler(message, register_password)
 
 def register_password(message):
-    password = message.text
-    USERS[username] = password
+    password = hash(message.text)
+    stmt = f"INSERT INTO Users (username, password) VALUES({username}, {password})"
+    Database.cursor.execute(stmt)
     bot.send_message(message.chat.id, "Поздравляю! Ты успешно зарегистрировался")
+
 """
 КОНЕЦ| функция register для регистрации нового пользователя
 """
