@@ -37,30 +37,29 @@ def start(message):
  """
 @bot.message_handler(commands=["help"])
 def information(message):
-    murkup = types.ReplyKeyboardMarkup()
+    markup = types.InlineKeyboardMarkup()
+    
+    help_bttn = types.InlineKeyboardButton(text='help', callback_data='help')
+    start_bttn = types.InlineKeyboardButton(text='start', callback_data='start_bttn')
 
-    help_bttn = types.KeyboardButton("/help")
-    start_bttn = types.KeyboardButton("/start")
+    register_bttn = types.InlineKeyboardButton(text='register', callback_data='register_bttn')
+    login_bttn = types.InlineKeyboardButton(text='login', callback_data='login_bttn')
 
-    register_bttn = types.KeyboardButton("/register")
-    login_bttn = types.KeyboardButton("/login")
+    add_workout_bttn = types.InlineKeyboardButton(text='add_workout', callback_data='add_workout_bttn')
+    view_workout_bttn = types.InlineKeyboardButton(text='view_workout', callback_data='view_workout_bttn')
 
-    add_workout_bttn = types.KeyboardButton("/add_workout")
-    view_workout_bttn = types.KeyboardButton("/view_workout")
+    set_goal_bttn = types.InlineKeyboardButton(text='set_goal', callback_data='set_goal_bttn')
+    view_goals_bttn = types.InlineKeyboardButton(text='view_goals', callback_data='view_goals_bttn')
 
+    statistics_bttn = types.InlineKeyboardButton(text='statistics', callback_data='statistics_bttn')
+    reminder_bttn = types.InlineKeyboardButton(text='reminder', callback_data='reminder_bttn')
+    export_data_bttn = types.InlineKeyboardButton(text='export_data', callback_data='export_data_bttn')
 
-    set_goal_bttn = types.KeyboardButton("/set_goal")
-    view_goals_bttn = types.KeyboardButton("/view_goals")
-
-    statistics_bttn = types.KeyboardButton("/statistics")
-    reminder_bttn = types.KeyboardButton("/reminder")
-    export_data_bttn = types.KeyboardButton("/export_data")
-
-    murkup.row(help_bttn, start_bttn)
-    murkup.row(register_bttn, login_bttn)
-    murkup.row(add_workout_bttn, view_workout_bttn)
-    murkup.row(set_goal_bttn, view_goals_bttn)
-    murkup.row(statistics_bttn, reminder_bttn, export_data_bttn)
+    markup.add(help_bttn, start_bttn)
+    markup.add(register_bttn, login_bttn)
+    markup.add(add_workout_bttn, view_workout_bttn)
+    markup.add(set_goal_bttn, view_goals_bttn)
+    markup.add(statistics_bttn, reminder_bttn, export_data_bttn)
 
     bot.send_message(message.chat.id,
 """Список команд:
@@ -84,7 +83,7 @@ def information(message):
     */reminder установить "каждый вторник и четверг в 7:00"`.
 11)/export_data – Экспорт данных о тренировках (опционально).
                      
-                    """,  reply_markup=murkup)
+                    """,  reply_markup=markup)
 """
 КОНЕЦ| функция Help для получения информации
 """
