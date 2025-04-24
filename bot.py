@@ -1,21 +1,28 @@
 #импотр библиотек и других файлов для работ
-# import telebot
 from telebot import types, TeleBot
 from config import TOKEN
 from data_base import Database
-
-USERS = {}
-
-
-Database.cursor.execute('SELECT * FROM Users')
-users = Database.cursor.fetchall()
-
-# Выводим результаты
-for user in users:
-  print(user)
-
+import sqlite3
+from user import User
 
 bot = TeleBot(TOKEN)
+""""
+for test:
+"""
+@bot.message_handler(commands=['test']) 
+def start(message):
+    print(Database.get_all_users)
+    Database.create_table()
+
+
+
+
+
+
+"""
+end for test
+"""
+
 
 """
 НАЧАЛО| функция start для начала работы бота
@@ -100,16 +107,24 @@ def register(message):
     bot.register_next_step_handler(message, register_username)
 
 def register_username(message):
-    global username
-    username = message.text
+    global user_name
+    user_name = message.text
     bot.send_message(message.chat.id, "А теперь придумай пароль")
 
     bot.register_next_step_handler(message, register_password)
 
 def register_password(message):
     password = hash(message.text)
-    stmt = f"INSERT INTO Users (username, password) VALUES({username}, {password})"
-    Database.cursor.execute(stmt)
+    user = User(user_name, password)
+    print(user.user_name)
+    if Database.search_user_by_name(user_name):
+        bot.send_message(message.chat.id, "Увы, но пользователь с таким именем уже есть, попробуй снова")
+        bot.register_next_step_handler(message, register)
+        return None
+
+    print(user.user_name)
+    Database.save(user)
+    print(user.user_name)
     bot.send_message(message.chat.id, "Поздравляю! Ты успешно зарегистрировался")
 
 """
