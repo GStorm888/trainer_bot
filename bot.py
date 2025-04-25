@@ -6,22 +6,6 @@ import sqlite3
 from user import User
 
 bot = TeleBot(TOKEN)
-""""
-for test:
-"""
-@bot.message_handler(commands=['test']) 
-def start(message):
-    print(Database.get_all_users)
-    Database.create_table()
-
-
-
-
-
-
-"""
-end for test
-"""
 
 
 """
@@ -114,17 +98,17 @@ def register_username(message):
     bot.register_next_step_handler(message, register_password)
 
 def register_password(message):
-    password = hash(message.text)
-    user = User(user_name, password)
-    print(user.user_name)
+    user_password = hash(message.text)
+    user = User(user_name, user_password)
+    print(user.user_password) #обязательно удалить 
     if Database.search_user_by_name(user_name):
         bot.send_message(message.chat.id, "Увы, но пользователь с таким именем уже есть, попробуй снова")
         bot.register_next_step_handler(message, register)
         return None
 
-    print(user.user_name)
+    print(user.user_name) #обязательно удалить
     Database.save(user)
-    print(user.user_name)
+    print(user.user_password) #обязательно удалить
     bot.send_message(message.chat.id, "Поздравляю! Ты успешно зарегистрировался")
 
 """

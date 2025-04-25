@@ -5,7 +5,7 @@ class Database:
     users = []
 
     SCHEMA = "schema.sql"
-    DATABASE = "database.db"
+    DATABASE = "trainer_bot.db"
 
     @staticmethod
     def execute(sql, params=()):
@@ -18,7 +18,7 @@ class Database:
         # выполнение скрипта для базы данных
         cursor.execute(sql, params)
 
-        # фиксируем измнения в бвзе данных
+        # фиксируем измнения в базе данных
         connection.commit()
 
     @staticmethod
