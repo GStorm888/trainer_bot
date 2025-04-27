@@ -10,7 +10,7 @@ class Database:
     @staticmethod
     def execute(sql, params=()):
         # ПОДКЛЮЧАЕМСЯ К БАЗЕ ДАННЫХ
-        connection = sqlite3.connect(Database.DATABASE)
+        connection = sqlite3.connect(Database.DATABASE, check_same_thead=False)
 
         # получаем курсор
         cursor = connection.cursor()
@@ -40,7 +40,7 @@ class Database:
     
     @staticmethod
     def find_user_by_name(user_name):
-        connection = sqlite3.connect(Database.DATABASE)
+        connection = sqlite3.connect(Database.DATABASE, check_same_thead=False)
 
         cursor = connection.cursor()
 
