@@ -1,32 +1,39 @@
-#импотр библиотек и других файлов для работ
+"""
+""
+эти ковычки нужны для удобства ориентации в коде
+""
+"""
 from telebot import types, TeleBot
 from config import TOKEN
 from data_base import Database
 import sqlite3
 from user import User
 
-bot = TeleBot(TOKEN)
-
-
+bot = TeleBot(TOKEN) #создание бота
 """
-НАЧАЛО| функция start для начала работы бота
 """
-@bot.message_handler(commands=['start']) 
+"""
+"""
+@bot.message_handler(commands=['test']) #функция для тестов
+def test(message):
+    users = Database.get_all_users()
+    print(users)
+"""
+"""
+"""
+"""
+@bot.message_handler(commands=['start'])  #функция start для начала работы бота
 def start(message):
     markup = types.ReplyKeyboardMarkup()
     help_bttn = types.KeyboardButton("/help")
     markup.add(help_bttn)
     bot.send_message(message.chat.id, """Привет, я твой личный тренер Денис. 
 Нажми /help чтобы ознакомиться с командами""")
-
 """
-КОНЕЦ| функция start для начала работы бота
 """
-
 """
- # НАЧАЛО| функция Help для получения информации
- """
-@bot.message_handler(commands=["help"])
+"""
+@bot.message_handler(commands=["help"]) #функция Help для получения информации
 def information(message):
     markup = types.InlineKeyboardMarkup()
     
@@ -76,70 +83,70 @@ def information(message):
                      
                     """,  reply_markup=markup)
 """
-КОНЕЦ| функция Help для получения информации
 """
-
-
 """
-НАЧАЛО| функция register для регистрации нового пользователя
 """
-@bot.message_handler(commands=['register']) 
+#функция register для регистрации нового пользователя
+@bot.message_handler(commands=['register']) #начало и ввод имени
 def register(message):
-
     bot.send_message(message.chat.id, "Для регистрации введи имя пользователя")
-
     bot.register_next_step_handler(message, register_username)
-
-def register_username(message):
+""""""
+def register_username(message): #проверка на уникальность в БД и ввод пароля
     global user_name
     user_name = message.text
-    bot.send_message(message.chat.id, "А теперь придумай пароль")
-
-    bot.register_next_step_handler(message, register_password)
-
-def register_password(message):
-    user_password = hash(message.text)
-    user = User(user_name, user_password)
-    print(user.user_password) #обязательно удалить 
     if Database.search_user_by_name(user_name):
-        bot.send_message(message.chat.id, "Увы, но пользователь с таким именем уже есть, попробуй снова")
-        bot.register_next_step_handler(message, register)
+        bot.send_message(message.chat.id, f"Увы, но пользователь с именем {user_name} уже есть, попробуй ввести новое имя")
+        bot.register_next_step_handler(message, register_username)
         return None
 
-    print(user.user_name) #обязательно удалить
+    bot.send_message(message.chat.id, "А теперь придумай пароль")
+    bot.register_next_step_handler(message, register_password)
+""""""
+def register_password(message): #завершение и добавление записи в БД
+    user_password = hash(message.text)
+    status_log_in = 1
+    user = User(user_name, user_password, status_log_in)
     Database.save(user)
-    print(user.user_password) #обязательно удалить
     bot.send_message(message.chat.id, "Поздравляю! Ты успешно зарегистрировался")
-
 """
-КОНЕЦ| функция register для регистрации нового пользователя
 """
-
 """
-НАЧАЛО| функция login для авторизации пользователя
 """
-@bot.message_handler(commands=['login']) 
+#функция login для авторизации пользователя
+@bot.message_handler(commands=['login']) #начало, ввод имени и проверка на наличие записей в БД
 def login(message):
+    if Database.get_all_users() is None:
+        bot.send_message(message.chat.id, """Увы, но сейчас нет зарегистрированых пользователей, попробуй зарегистрировать.
+Для этого просто введи имя""")
+        bot.register_next_step_handler(message, register_username)
+        return None
 
     bot.send_message(message.chat.id, "Для входа введи имя пользователя")
-
     bot.register_next_step_handler(message, login_username)
+""""""
+def login_username(message):#проверка имени на совпадение в БД и ввод пароля
+    global user_name
+    user_name = message.text
+    if Database.return_user_by_name(user_name) is None:
+        bot.send_message(message.chat.id, "Увы, но я не нашел пользователя с таким именем, попробуй ввести другое имя")
+        bot.register_next_step_handler(message, login_username)
+        return None
 
-def login_username(message):
-    global username
-    username = message.text
     bot.send_message(message.chat.id, "А теперь вспомни пароль")
 
     bot.register_next_step_handler(message, login_password)
-
-def login_password(message):
-    password = message.text
-    USERS[username] = password
-    for i in USERS:
-        print(i)
-    bot.send_message(message.chat.id, "Поздравляю! Ты успешно вошел")
-"""
-КОНЕЦ| функция login для авторизации пользователя
-"""
+""""""
+def login_password(message): #проверка совпадения пароля и имени и запись в БД с статусом активности 1(true)
+    user_password = hash(message.text)
+    user = Database.return_user_by_name(user_name)
+    print("login", user_name, user.user_name, "/n",user_password, user.user_password ) #удалить
+    if user.user_name == user_name and user.user_password == user_password:
+        # if user.status_log_in == 0:
+        #     user.status_log_in = 1
+        bot.send_message(message.chat.id, f"Ура, вы прошли регистрацию, добро пожаловать {user_name}")
+        return None
+    bot.send_message(message.chat.id, f"Увы, но вы не прошли регистрацию, неверный пароль, попробуй ввести его завново")
+    bot.register_next_step_handler(message, login_password)
 
 bot.infinity_polling()

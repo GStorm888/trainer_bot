@@ -1,5 +1,5 @@
+#файл для игнорирования файлов гитом
 path
 __pycache__
 config.py
 .DS_Store
-trainer_bot_base.db

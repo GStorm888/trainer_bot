@@ -1,16 +1,15 @@
+#файл для пользования к базой данных
 import sqlite3
 from user import User
 
 class Database:
-    users = []
-
     SCHEMA = "schema.sql"
     DATABASE = "trainer_bot.db"
 
     @staticmethod
-    def execute(sql, params=()):
+    def execute(sql, params=()): #функция для предотвращения повторяющегося кода
         # ПОДКЛЮЧАЕМСЯ К БАЗЕ ДАННЫХ
-        connection = sqlite3.connect(Database.DATABASE, check_same_thead=False)
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
 
         # получаем курсор
         cursor = connection.cursor()
@@ -22,25 +21,38 @@ class Database:
         connection.commit()
 
     @staticmethod
-    def create_table():
+    def create_table(): #функция для создание таблицы
         with open(Database.SCHEMA) as schema_file:
             Database.execute(schema_file.read())
 
     @staticmethod
-    def save(user:User):
-        if Database.find_user_by_name(user.user_name) is not None:
+    def save(user:User): #функция для новых записей
+        if Database.return_user_by_name(user.user_name) is not None:
             return False
-        Database.execute("INSERT INTO users VALUES (?, ?)",
-                       [user.user_name, user.user_password])
+        Database.execute("INSERT INTO users (user_name, user_password, status_log_in) VALUES (?, ?, ?)",
+                       [user.user_name, user.user_password, user.status_log_in])
         return True
 
     @staticmethod
-    def get_all_users():
-        return Database.users
+    def get_all_users(): #функция для получения всех пользователей
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM users")
+
+        all_users = cursor.fetchall()
+        users = []
+        for id, user_name, user_password, status_log_in in all_users:
+            user = User(user_name, user_password, status_log_in, id)
+            users.append(user) 
+        if len(users) == 0:
+            return None
+        return users
     
     @staticmethod
-    def find_user_by_name(user_name):
-        connection = sqlite3.connect(Database.DATABASE, check_same_thead=False)
+    def return_user_by_name(user_name): #функция для получения пользователя по имени
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
 
         cursor = connection.cursor()
 
@@ -50,14 +62,23 @@ class Database:
         if len(users) == 0:
             return None
         
-        user = User(
-            users[0][0],
-            users[0][1],
-            users[0][2])
+        id, user_name, user_password, status_log_in = users[0]
+        user = User(user_name, user_password, status_log_in, id)
         return user
 
-    @staticmethod
+    @staticmethod #функция для проверки существования пользователя
     def search_user_by_name(user_name):
-        if Database.find_user_by_name(user_name) is not None:
+        if Database.return_user_by_name(user_name) is not None:
             return True
         return False
+
+    #для тестов чтобы не было мусорных пользователей
+    # @staticmethod
+    # def drop():
+    #     connection = sqlite3.connect(Database.DATABASE)
+
+    #     cursor = connection.cursor()
+    #     cursor.execute("DROP TABLE users")
+    #     # cursor.execute("""ALTER TABLE users
+    #     #                     ADD register TEXT NOT NULL;""")
+    #     return True
