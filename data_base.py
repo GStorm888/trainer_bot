@@ -29,8 +29,8 @@ class Database:
     def save(user:User): #функция для новых записей
         if Database.return_user_by_name(user.user_name) is not None:
             return False
-        Database.execute("INSERT INTO users (user_name, user_password, status_log_in) VALUES (?, ?, ?)",
-                       [user.user_name, user.user_password, user.status_log_in])
+        Database.execute("INSERT INTO users (user_name, user_password, status_log_in, telegram_user_id) VALUES (?, ?, ?, ?)",
+                       [user.user_name, user.user_password, user.status_log_in, user.telegram_user_id])
         return True
 
     @staticmethod
@@ -43,8 +43,8 @@ class Database:
 
         all_users = cursor.fetchall()
         users = []
-        for id, user_name, user_password, status_log_in in all_users:
-            user = User(user_name, user_password, status_log_in, id)
+        for id, user_name, user_password, status_log_in, telegram_user_id in all_users:
+            user = User(user_name, user_password, status_log_in, telegram_user_id, id)
             users.append(user) 
         if len(users) == 0:
             return None
@@ -62,8 +62,8 @@ class Database:
         if len(users) == 0:
             return None
         
-        id, user_name, user_password, status_log_in = users[0]
-        user = User(user_name, user_password, status_log_in, id)
+        id, user_name, user_password, status_log_in, telegram_user_id = users[0]
+        user = User(user_name, user_password, status_log_in, telegram_user_id, id)
         return user
 
     @staticmethod #функция для проверки существования пользователя
@@ -72,6 +72,21 @@ class Database:
             return True
         return False
 
+    @staticmethod #функция для нахождения пользователя по telegram_user_id
+    def search_user_by_telegram_id(telegram_user_id):
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM users WHERE telegram_user_id = ?", [telegram_user_id])
+        users = cursor.fetchall()
+
+        if len(users) == 0:
+            return None
+        
+        id, user_name, user_password, status_log_in, telegram_user_id = users[0]
+        user = User(user_name, user_password, status_log_in, telegram_user_id, id)
+        return user
     #для тестов чтобы не было мусорных пользователей
     # @staticmethod
     # def drop():
