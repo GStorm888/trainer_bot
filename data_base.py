@@ -87,6 +87,17 @@ class Database:
         id, user_name, user_password, status_log_in, telegram_user_id = users[0]
         user = User(user_name, user_password, status_log_in, telegram_user_id, id)
         return user
+
+    @staticmethod
+    def update_status_log_in(user:User):
+        # Database.execute("UPDATE users SET status_log_in=? WHERE id=?",
+        #                     [user.status_log_in, user.id])
+        Database.execute("UPDATE users SET status_log_in=? WHERE id=?",
+                       [user.status_log_in, user.id])
+        return True
+
+
+
     #для тестов чтобы не было мусорных пользователей
     # @staticmethod
     # def drop():

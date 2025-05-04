@@ -8,6 +8,7 @@ from config import TOKEN
 from data_base import Database
 import sqlite3
 from user import User
+import hashlib
 
 bot = TeleBot(TOKEN) #создание бота
 """
@@ -105,10 +106,9 @@ def register_username(message): #проверка на уникальность 
     bot.register_next_step_handler(message, register_password)
 """"""
 def register_password(message): #завершение и добавление записи в БД
-    user_password = hash(message.text)
-    status_log_in = 1 # надо сделать 
+    user_password = hashlib.md5((message.text).encode()).hexdigest()
+    status_log_in = 1
     telegram_user_id = str(message.chat.id)
-    print(telegram_user_id)
     user = User(user_name, user_password, status_log_in, telegram_user_id)
     Database.save(user)
     bot.send_message(message.chat.id, "Поздравляю! Ты успешно зарегистрировался")
@@ -141,11 +141,13 @@ def login_username(message):#проверка имени на совпадени
     bot.register_next_step_handler(message, login_password)
 """"""
 def login_password(message): #проверка совпадения пароля и имени и запись в БД с статусом активности 1(true)
-    user_password = hash(message.text)
+    user_password = hashlib.md5((message.text).encode()).hexdigest()
     user = Database.return_user_by_name(user_name)
     if user.user_name == user_name and user.user_password == user_password:
+        print(user.status_log_in)
         if user.status_log_in == 0: # надо сделать 
-            user.status_log_in = 1 # надо сделать 
+            Database.update_status_log_in(user) # надо сделать 
+            print(user.status_log_in)
         bot.send_message(message.chat.id, f"Ура, вы прошли регистрацию, добро пожаловать {user_name}")
         return None
     bot.send_message(message.chat.id, f"Увы, но вы не прошли регистрацию, неверный пароль, попробуй ввести его завново")
@@ -154,17 +156,21 @@ def login_password(message): #проверка совпадения пароля
 """
 """
 """
-@bot.message_handler(commands=['log_out'])  #функция start для начала работы бота
-def log_out(message):
+@bot.message_handler(commands=['logout'])  #функция logout для выхода из аккаунта
+def logout(message):
     telegram_id = str(message.chat.id)
     user = Database.search_user_by_telegram_id(telegram_id)
+    print(user.status_log_in)
     if user is None:
         bot.send_message(message.chat.id, "Увы, но вы не зарегистрированы(")
         return None
     elif user.status_log_in == 0: # надо сделать 
+        print(user.status_log_in)
         bot.send_message(message.chat.id, "Вы сейчас не активны(")
         return None
-    user.status_log_in = 1 # надо сделать 
+    Database.update_status_log_in(user) # надо сделать 
+    print(user.status_log_in)
+
     bot.send_message(message.chat.id, "Вы успешно вышли из аккаунта, чтобы вернуться нажмите /start")
 
 bot.infinity_polling()
