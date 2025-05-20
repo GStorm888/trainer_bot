@@ -3,21 +3,21 @@
 эти ковычки нужны для удобства ориентации в коде
 ""
 """
-from telebot import types, TeleBot
+from telebot import types, TeleBot # импорт библиотек и файлов репозитория
 from config import TOKEN
 from data_base import Database
 import sqlite3
 from user import User
 import hashlib
 
-bot = TeleBot(TOKEN) #создание бота
+bot = TeleBot(TOKEN) #создание бота через токен
 """
 """
 """
 """
 @bot.message_handler(commands=['test']) #функция для тестов
 def test(message):
-    users = Database.get_all_users()
+    users = Database.create_table()
     print(users)
     print(message.chat.id)
 """
@@ -97,9 +97,14 @@ def register(message):
 def register_username(message): #проверка на уникальность в БД и ввод пароля
     global user_name
     user_name = message.text
+    telegram_user_id = str(message.chat.id)
     if Database.search_user_by_name(user_name):
         bot.send_message(message.chat.id, f"Увы, но пользователь с именем {user_name} уже есть, попробуй ввести новое имя")
         bot.register_next_step_handler(message, register_username)
+        return None
+    if Database.search_user_by_telegram_id(telegram_user_id):
+        bot.send_message(message.chat.id, f"Увы, но вы уже зарегистрированы, попробуйте ввести ваше имя и войти в аккаунт")
+        bot.register_next_step_handler(message, login)
         return None
 
     bot.send_message(message.chat.id, "А теперь придумай пароль")
@@ -144,10 +149,8 @@ def login_password(message): #проверка совпадения пароля
     user_password = hashlib.md5((message.text).encode()).hexdigest()
     user = Database.return_user_by_name(user_name)
     if user.user_name == user_name and user.user_password == user_password:
-        print(user.status_log_in)
         if user.status_log_in == 0: # надо сделать 
             Database.update_status_log_in(user) # надо сделать 
-            print(user.status_log_in)
         bot.send_message(message.chat.id, f"Ура, вы прошли регистрацию, добро пожаловать {user_name}")
         return None
     bot.send_message(message.chat.id, f"Увы, но вы не прошли регистрацию, неверный пароль, попробуй ввести его завново")
@@ -158,19 +161,19 @@ def login_password(message): #проверка совпадения пароля
 """
 @bot.message_handler(commands=['logout'])  #функция logout для выхода из аккаунта
 def logout(message):
-    telegram_id = str(message.chat.id)
-    user = Database.search_user_by_telegram_id(telegram_id)
-    print(user.status_log_in)
+    telegram_user_id = str(message.chat.id)
+    user = Database.search_user_by_telegram_id(telegram_user_id)
     if user is None:
         bot.send_message(message.chat.id, "Увы, но вы не зарегистрированы(")
         return None
     elif user.status_log_in == 0: # надо сделать 
-        print(user.status_log_in)
         bot.send_message(message.chat.id, "Вы сейчас не активны(")
         return None
-    Database.update_status_log_in(user) # надо сделать 
-    print(user.status_log_in)
-
+    Database.update_status_log_in(0, telegram_user_id) # надо сделать 
     bot.send_message(message.chat.id, "Вы успешно вышли из аккаунта, чтобы вернуться нажмите /start")
 
 bot.infinity_polling()
+"""
+"""
+"""
+"""
