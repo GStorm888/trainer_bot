@@ -30,9 +30,13 @@ class Database:
     """
     """
     @staticmethod
-    def create_table(): #функция для создание таблицы
+    def create_table():
         with open(Database.SCHEMA) as schema_file:
-            Database.execute(schema_file.read())
+            connection = sqlite3.connect(Database.DATABASE)
+            cursor = connection.cursor()
+            cursor.executescript(schema_file.read())
+            connection.commit()
+            connection.close()
     """
     """
     """
@@ -116,7 +120,7 @@ class Database:
     """
     """
     @staticmethod #изменить статус активности при logout(не работает)
-    def update_status_log_in(telegram_user_id, status_log_in):
+    def update_status_log_in(status_log_in, telegram_user_id):
         # Database.execute("UPDATE users SET status_log_in=? WHERE id=?",
         #                     [user.status_log_in, user.id])
         Database.execute("UPDATE users SET status_log_in=? WHERE telegram_user_id=?",
@@ -145,3 +149,4 @@ class Database:
     #     # cursor.execute("""ALTER TABLE users
     #     #                     ADD register TEXT NOT NULL;""")
     #     return True
+

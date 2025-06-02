@@ -17,7 +17,7 @@ bot = TeleBot(TOKEN) #создание бота через токен
 """
 @bot.message_handler(commands=['test']) #функция для тестов
 def test(message):
-    users = Database.create_table()
+    users = Database.get_all_users()
     print(users)
     print(message.chat.id)
 """
@@ -147,13 +147,14 @@ def login_username(message):#проверка имени на совпадени
 """"""
 def login_password(message): #проверка совпадения пароля и имени и запись в БД с статусом активности 1(true)
     user_password = hashlib.md5((message.text).encode()).hexdigest()
+    telegram_user_id = str(message.chat.id)
     user = Database.return_user_by_name(user_name)
     if user.user_name == user_name and user.user_password == user_password:
         if user.status_log_in == 0: # надо сделать 
-            Database.update_status_log_in(user) # надо сделать 
-        bot.send_message(message.chat.id, f"Ура, вы прошли регистрацию, добро пожаловать {user_name}")
+            Database.update_status_log_in(1, telegram_user_id) # надо сделать 
+        bot.send_message(message.chat.id, f"Ура, вы вошли в аккаунт, добро пожаловать {user_name}")
         return None
-    bot.send_message(message.chat.id, f"Увы, но вы не прошли регистрацию, неверный пароль, попробуй ввести его завново")
+    bot.send_message(message.chat.id, f"Увы, но вы не вошли в аккаунт, неверный пароль, попробуй ввести его завново")
     bot.register_next_step_handler(message, login_password)
 """
 """
@@ -169,11 +170,29 @@ def logout(message):
     elif user.status_log_in == 0: # надо сделать 
         bot.send_message(message.chat.id, "Вы сейчас не активны(")
         return None
-    Database.update_status_log_in(0, telegram_user_id) # надо сделать 
-    bot.send_message(message.chat.id, "Вы успешно вышли из аккаунта, чтобы вернуться нажмите /start")
+    elif user.status_log_in == 1:
+            Database.update_status_log_in(0, telegram_user_id) # надо сделать 
+            bot.send_message(message.chat.id, "Вы успешно вышли из аккаунта, чтобы вернуться нажмите /start")
+
+"""
+"""
+"""
+"""
+@bot.message_handler(commands=['add_workout'])  #функция add_worckout для добавления тренировки
+def add_workout_name_trauning(message):
+    bot.send_message(message.chat.id, """Я готов записать твою тренировку, как ее назвать?""")
+    bot.register_next_step_handler(message, date_training)
+
+def date_training(message):
+    global name_training
+    name_training = message.text
+    
+
+
+
+
+
+
+
 
 bot.infinity_polling()
-"""
-"""
-"""
-"""
