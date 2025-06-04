@@ -9,7 +9,7 @@ from data_base import Database
 import sqlite3
 from user import User
 import hashlib
-
+""""""
 bot = TeleBot(TOKEN) #создание бота через токен
 """
 """
@@ -20,17 +20,28 @@ def test(message):
     users = Database.get_all_users()
     print(users)
     print(message.chat.id)
+    markup = types.ReplyKeyboardRemove()
+    bot.send_message(message.from_user.id, "Клавиатура удалена", reply_markup=markup)
+
 """
 """
 """
-"""
+"""       
 @bot.message_handler(commands=['start'])  #функция start для начала работы бота
 def start(message):
-    markup = types.ReplyKeyboardMarkup()
-    help_bttn = types.KeyboardButton("/help")
+    telegram_user_id = str(message.chat.id)
+    if Database.examination_status_log_in(0, telegram_user_id) is None:
+        markup = types.InlineKeyboardMarkup()
+        login = types.KeyboardButton("/login")
+        register = types.KeyboardButton("/register")
+        markup.add(login, register)
+        bot.send_message(message.chat.id, """вы не в аккаунте, чтобы продолжить использовать бота войдите в него""", reply_markup=markup)
+        return
+    markup = types.InlineKeyboardMarkup()
+    help_bttn = types.InlineKeyboardButton(text='help', callback_data='help')
     markup.add(help_bttn)
     bot.send_message(message.chat.id, """Привет, я твой личный тренер Денис. 
-Нажми /help чтобы ознакомиться с командами""")
+Нажми /help чтобы ознакомиться с командами""", reply_markup=markup)
 """
 """
 """
@@ -181,17 +192,26 @@ def logout(message):
 @bot.message_handler(commands=['add_workout'])  #функция add_worckout для добавления тренировки
 def add_workout_name_trauning(message):
     bot.send_message(message.chat.id, """Я готов записать твою тренировку, как ее назвать?""")
-    bot.register_next_step_handler(message, date_training)
+    bot.register_next_step_handler(message, type_training)
+""""""
+def type_training(message):
+    global type_training
+    type_training = message.text
+    bot.send_message(message.chat.id, """Отлично, теперь введи длительность или дистанцию>>>""")
+    bot.register_next_step_handler(message, time_or_distance_training)
+""""""
+def type_training(message):
+    global time_or_distance_training
+    time_or_distance_training = message.text
+    markup = types.InlineKeyboardMarkup()
+    yes = types.InlineKeyboardButton("Да")
+    no = types.InlineKeyboardButton("Нет")
+    markup.add(yes, no)
+    bot.send_message(message.chat.id, """Почти готово, есть ли какие заметки к тренировке?""", reply_markup=markup)
+    bot.register_next_step_handler(message, time_or_distance_training)
 
-def date_training(message):
-    global name_training
-    name_training = message.text
-    
 
-
-
-
-
+# call_trainig_or_else
 
 
 

@@ -1,6 +1,6 @@
 #класс для описания пользователя
 from dataclasses import dataclass
-
+from datetime import date
 @dataclass 
 class User:
     user_name: str
@@ -10,12 +10,11 @@ class User:
     id: int = None
 
 @dataclass
-class Training
+class Training:
     user_name: str
     type_trainig: str
-    date_training: #?
-    time_trainig: = None #?
-    distance_trainig: str = None
-    call_trainig: int = None
+    date_training: date
+    time_or_distance_trainig: str
+    call_trainig_or_else: int
     discription_trainig: str = None
-    id: int: None
+    id: int = None

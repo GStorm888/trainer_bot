@@ -130,14 +130,39 @@ class Database:
     """
     """
     """
+    @staticmethod #изменить статус активности при logout(не работает)
+    def examination_status_log_in(status_log_in, telegram_user_id):
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM users WHERE status_log_in=? AND telegram_user_id=?", [status_log_in, telegram_user_id])
+
+        users = cursor.fetchall()
+
+        if len(users) == 0:
+            return None
+        
+        id, user_name, user_password, status_log_in, telegram_user_id = users[0]
+        user = User(user_name, user_password, status_log_in, telegram_user_id, id)
+        return user
+    """
+    """
+    """
+    """
     @staticmethod #добавление тренировки(както автоматизировать)(не работает)
     def add_training():
-        Database.execute("INSERT INTO trainig () VALUES ())",
+        Database.execute("INSERT INTO trainig () VALUES ()",
                          [])
     """
     """
     """
     """
+    @staticmethod
+    def search_user_by_all(know, value):
+        Database.execute("SELECT * FROM training WHERE ?=?", [know, value])
+
+
     #для тестов чтобы не было мусорных пользователей и тренировок
     # @staticmethod
     # def drop():
