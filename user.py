@@ -12,9 +12,10 @@ class User:
 @dataclass
 class Training:
     user_name: str
-    type_trainig: str
-    date_training: date
-    time_or_distance_trainig: str
-    call_trainig_or_else: int
-    discription_trainig: str = None
+    type_training: str
+    date_training: str
+    call_training: str
+    time_training: int = None
+    distance_training: int = None
+    description_training: str = None
     id: int = None

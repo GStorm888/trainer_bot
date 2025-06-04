@@ -17,9 +17,10 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS training (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_name TEXT NOT NULL, --должен быть такой же как и в users(автоматизировать)
-    type_trainig TEXT NOT NULL, --тип тренировки
-    date_training DATE NOT NULL, --дата(надо сделать автозаполнение)
-    time_or_distance_trainig TEXT NOT NULL, --длительность тренировки(запрос пользователя)
-    call_trainig_or_else TEXT NOT NULL, --каллории(запрос пользователя)
-    discription_trainig TEXT --описание пользователя
+    type_training TEXT NOT NULL, --тип тренировки
+    date_training TEXT NOT NULL, --дата(формат: YYYY-MM-DD)
+    call_training TEXT NOT NULL, --каллории(запрос пользователя)
+    time_training INTEGER, --длительность тренировки(вместо возможна distance_training)
+    distance_training INTEGER, --дистанция тренировки(вместо возможна time_training)
+    description_training TEXT --описание пользователя
 )

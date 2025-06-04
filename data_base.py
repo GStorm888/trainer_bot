@@ -1,6 +1,6 @@
 #файл для пользования к базой данных
 import sqlite3
-from user import User
+from user import User, Training
 """
 """
 """
@@ -119,7 +119,7 @@ class Database:
     """
     """
     """
-    @staticmethod #изменить статус активности при logout(не работает)
+    @staticmethod #изменить статус активности при logout
     def update_status_log_in(status_log_in, telegram_user_id):
         # Database.execute("UPDATE users SET status_log_in=? WHERE id=?",
         #                     [user.status_log_in, user.id])
@@ -130,7 +130,7 @@ class Database:
     """
     """
     """
-    @staticmethod #изменить статус активности при logout(не работает)
+    @staticmethod #узнать статус активности при logout
     def examination_status_log_in(status_log_in, telegram_user_id):
         connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
 
@@ -150,18 +150,38 @@ class Database:
     """
     """
     """
-    @staticmethod #добавление тренировки(както автоматизировать)(не работает)
-    def add_training():
-        Database.execute("INSERT INTO trainig () VALUES ()",
-                         [])
-    """
-    """
-    """
-    """
-    @staticmethod
-    def search_user_by_all(know, value):
-        Database.execute("SELECT * FROM training WHERE ?=?", [know, value])
+    @staticmethod #добавление тренировки
+    def add_training(training:Training):
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
 
+        cursor = connection.cursor()
+
+        cursor.execute("""INSERT INTO training (user_name, type_training, date_training, call_training, time_training, distance_training, description_training)
+        VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        [training.user_name, training.type_training, training.date_training, training.call_training,
+        training.time_training, training.distance_training, training.description_training])
+        return True
+
+    """
+    """
+    """
+    """ 
+    @staticmethod
+    def get_all_training():
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM training")
+
+        all_training = cursor.fetchall()
+        trainings = []
+        for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_trainig in all_training:
+            training = Training(user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
+            trainings.append(training) 
+        if len(trainings) == 0:
+            return None
+        return trainings
 
     #для тестов чтобы не было мусорных пользователей и тренировок
     # @staticmethod
