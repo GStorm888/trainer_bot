@@ -160,8 +160,13 @@ class Database:
         VALUES (?, ?, ?, ?, ?, ?, ?)""",
         [training.user_name, training.type_training, training.date_training, training.call_training,
         training.time_training, training.distance_training, training.description_training])
-        return True
 
+        print(cursor.execute("""INSERT INTO training (user_name, type_training, date_training, call_training, time_training, distance_training, description_training)
+        VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        [training.user_name, training.type_training, training.date_training, training.call_training,
+        training.time_training, training.distance_training, training.description_training])
+        )
+        return True
     """
     """
     """
@@ -174,6 +179,28 @@ class Database:
 
         cursor.execute("SELECT * FROM training")
 
+        all_trainings = cursor.fetchall()
+        trainings = []
+        for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_trainig in all_trainings:
+            training = Training(user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
+            trainings.append(training) 
+        if len(trainings) == 0:
+            return None
+        return trainings
+    """
+    """
+    """
+    """ 
+    @staticmethod
+    def view_workouts_to_type_and_date(type_training, date_training):
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM training WHERE type_training=? AND date_training=?",
+        [type_training, date_training])
+
+
         all_training = cursor.fetchall()
         trainings = []
         for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_trainig in all_training:
@@ -182,7 +209,6 @@ class Database:
         if len(trainings) == 0:
             return None
         return trainings
-
     #для тестов чтобы не было мусорных пользователей и тренировок
     # @staticmethod
     # def drop():
