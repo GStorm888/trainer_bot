@@ -12,8 +12,63 @@ class Database:
     """
     """
     """
-    @staticmethod
-    def execute(sql, params=()): #функция для предотвращения повторяющегося кода
+    @staticmethod #удаление таблиц (для тестов)
+    def drop():
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
+
+        cursor = connection.cursor()
+
+        cursor.execute("""DROP TABLE users""")
+        cursor.execute("""DROP TABLE trainings""")
+        cursor.execute("""DROP TABLE goals""")
+        connection.commit()
+        return True
+    """
+    """
+    """
+    """
+    @staticmethod#промотр всех тренировок(для тестов)
+    def get_all_training():
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM trainings")
+
+        all_trainings = cursor.fetchall()
+        trainings = []
+        for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training in all_trainings:
+            training = (user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
+            trainings.append(training) 
+        if len(trainings) == 0:
+            return None
+        return trainings
+    """ 
+    """
+    """
+    """
+    @staticmethod#просмотр всех целей(для тестов)
+    def get_all_goals():
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM goals")
+
+        all_goals = cursor.fetchall()
+        goals = []
+        for id, user_name, date_start, type_training, distance_training, date_finish in all_goals:
+            goal = Goal(user_name, date_start, type_training, distance_training, date_finish, id)
+            goals.append(goal) 
+        if len(goals) == 0:
+            return None
+        return goals
+    """
+    """
+    """
+    """ 
+    @staticmethod #проверить нужно ли и где
+    def execute(sql, params=()):
         # ПОДКЛЮЧАЕМСЯ К БАЗЕ ДАННЫХ
         connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
 
@@ -29,7 +84,7 @@ class Database:
     """
     """
     """
-    @staticmethod
+    @staticmethod#создание таблиц
     def create_table():
         with open(Database.SCHEMA) as schema_file:
             connection = sqlite3.connect(Database.DATABASE)
@@ -41,8 +96,8 @@ class Database:
     """
     """
     """
-    @staticmethod
-    def save(user:User): #функция для новых записей
+    @staticmethod #добавление пользователя
+    def save(user:User):
         if Database.return_user_by_name(user.user_name) is not None:
             return False
         Database.execute("INSERT INTO users (user_name, user_password, status_log_in, telegram_user_id) VALUES (?, ?, ?, ?)",
@@ -52,8 +107,8 @@ class Database:
     """
     """
     """
-    @staticmethod
-    def get_all_users(): #функция для получения всех пользователей
+    @staticmethod #получение всех пользователей
+    def get_all_users():
         connection = sqlite3.connect(Database.DATABASE)
 
         cursor = connection.cursor()
@@ -72,8 +127,8 @@ class Database:
     """
     """
     """
-    @staticmethod
-    def return_user_by_name(user_name): #функция для получения пользователя по имени
+    @staticmethod #получение пользователя по имени
+    def return_user_by_name(user_name):
         connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
 
         cursor = connection.cursor()
@@ -91,16 +146,7 @@ class Database:
     """
     """
     """
-    @staticmethod #функция для проверки существования пользователя
-    def search_user_by_name(user_name):
-        if Database.return_user_by_name(user_name) is not None:
-            return True
-        return False
-    """
-    """
-    """
-    """
-    @staticmethod #функция для нахождения пользователя по telegram_user_id
+    @staticmethod #получение пользователя по telegram_user_id
     def search_user_by_telegram_id(telegram_user_id):
         connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
 
@@ -119,7 +165,7 @@ class Database:
     """
     """
     """
-    @staticmethod #изменить статус активности при logout
+    @staticmethod #изменить статус активности
     def update_status_log_in(status_log_in, telegram_user_id):
         # Database.execute("UPDATE users SET status_log_in=? WHERE id=?",
         #                     [user.status_log_in, user.id])
@@ -130,7 +176,7 @@ class Database:
     """
     """
     """
-    @staticmethod #узнать статус активности при logout
+    @staticmethod #узнать статус активности
     def examination_status_log_in(status_log_in, telegram_user_id):
         connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
 
@@ -166,14 +212,13 @@ class Database:
     """
     """
     """ 
-    @staticmethod
-    def get_all_training():
-        connection = sqlite3.connect(Database.DATABASE)
+    @staticmethod#получение всех тренировок по имени пользователя
+    def get_all_training_by_user_name(user_name):
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
 
         cursor = connection.cursor()
 
-        cursor.execute("SELECT * FROM trainings")
-
+        cursor.execute("SELECT * FROM trainings WHERE user_name = ?", [user_name])
         all_trainings = cursor.fetchall()
         trainings = []
         for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training in all_trainings:
@@ -185,30 +230,15 @@ class Database:
     """
     """
     """
-    """ 
-    @staticmethod
-    def get_all_training_by_user_name(user:User):
-        cursor.execute("SELECT * FROM trainings WHERE user_name = ?", [user.user_name])
-        all_trainings = cursor.fetchall()
-        trainings = []
-        for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training in all_trainings:
-            training = s(user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
-            trainings.append(training) 
-        if len(trainings) == 0:
-            return None
-        return trainings
     """
-    """
-    """
-    """
-    @staticmethod
-    def view_workouts_to_type(type_training, user:User):
+    @staticmethod#просмотр тренировок по типу
+    def view_workouts_to_type(type_training, user_name):
         connection = sqlite3.connect(Database.DATABASE)
 
         cursor = connection.cursor()
 
         cursor.execute("SELECT * FROM trainings WHERE type_training=? AND user_name =?",
-        [type_training, user.user_name])
+        [type_training, user_name])
 
 
         all_training = cursor.fetchall()
@@ -223,14 +253,14 @@ class Database:
     """
     """
     """
-    @staticmethod
+    @staticmethod#просмотр тренировок по промежутку времени
     def view_workouts_to_date(date_training_start, date_training_fininsh, user_name):
         connection = sqlite3.connect(Database.DATABASE)
 
         cursor = connection.cursor()
 
-        cursor.execute("SELECT * FROM trainings WHERE date_training=? AND date_training=? AND user_name =?",
-        [date_training, date_training_fininsh, user_name])
+        cursor.execute("SELECT * FROM trainings WHERE date_training>=? AND date_training<=? AND user_name =?",
+        [date_training_start, date_training_fininsh, user_name])
 
 
         all_training = cursor.fetchall()
@@ -245,14 +275,14 @@ class Database:
     """
     """
     """
-    @staticmethod
-    def view_workouts_to_type_and_date(type_training, date_training):
+    @staticmethod# просмотр тренировки по типу и промежутку времени
+    def view_workouts_to_type_and_date(type_training, date_start, today, user_name):
         connection = sqlite3.connect(Database.DATABASE)
 
         cursor = connection.cursor()
 
-        cursor.execute("SELECT * FROM trainings WHERE type_training=? AND date_training=?",
-        [type_training, date_training])
+        cursor.execute("SELECT * FROM trainings WHERE user_name=? AND type_training=? AND date_training>=? AND date_training<=?",
+        [user_name, type_training, date_start, today])
 
 
         all_training = cursor.fetchall()
@@ -267,27 +297,7 @@ class Database:
     """
     """
     """
-    @staticmethod
-    def get_all_goals():
-        connection = sqlite3.connect(Database.DATABASE)
-
-        cursor = connection.cursor()
-
-        cursor.execute("SELECT * FROM goals")
-
-        all_goals = cursor.fetchall()
-        goals = []
-        for id, user_name, date_start, type_training, distance_training, date_finish in all_goals:
-            goal = Goal(user_name, date_start, type_training, distance_training, date_finish, id)
-            goals.append(goal) 
-        if len(goals) == 0:
-            return None
-        return goals
-    """ 
-    """
-    """
-    """
-    @staticmethod
+    @staticmethod#просмотр всех целей по имени пользователя
     def get_all_goals_by_user_name(user:User):
         connection = sqlite3.connect(Database.DATABASE)
 
@@ -319,13 +329,18 @@ class Database:
          goal.distance_training, goal.date_finish])
         connection.commit()
         return True
-    #для тестов чтобы не было мусорных записей в БД
-    # @staticmethod
-    # def drop():
-    #     connection = sqlite3.connect(Database.DATABASE)
+    """ 
+    """
+    """
+    """
+    @staticmethod #удаление профиля и всех данных
+    def delete_account(user_name):
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
 
-    #     cursor = connection.cursor()
-    #     cursor.execute("DROP TABLE users")
-    #     cursor.execute("DROP TABLE trainings")
-    #     cursor.execute("DROP TABLE goals")
-    #     return True
+        cursor = connection.cursor()
+
+        cursor.execute("""DELETE FROM users WHERE user_name=?""", [user_name])
+        cursor.execute("""DELETE FROM trainings WHERE user_name=?""", [user_name])
+        cursor.execute("""DELETE FROM goals WHERE user_name=?""", [user_name])
+        connection.commit()
+        return True

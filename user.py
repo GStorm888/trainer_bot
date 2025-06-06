@@ -1,7 +1,7 @@
 #класс для описания пользователя
 from dataclasses import dataclass
 from datetime import date
-@dataclass 
+@dataclass #класс пользователя
 class User:
     user_name: str
     user_password: str
@@ -9,7 +9,7 @@ class User:
     telegram_user_id: str
     id: int = None
 
-@dataclass
+@dataclass#класс тренировки
 class Training:
     user_name: str
     type_training: str
@@ -20,7 +20,7 @@ class Training:
     description_training: str = None
     id: int = None
 
-@dataclass
+@dataclass#класс цели
 class Goal:
     user_name: str
     date_start: str

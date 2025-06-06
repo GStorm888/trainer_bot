@@ -1,7 +1,7 @@
 -- схема описывающая пользователя
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_name TEXT NOT NULL UNIQUE,
+    user_name TEXT NOT NULL UNIQUE,--ввод пользователя
     user_password TEXT NOT NULL, --хэш пароль
     status_log_in INTEGER NOT NULL, --статус активности
     telegram_user_id TEXT NOT NULL --id пользователя в тг, нужно для ограничения доступа
@@ -34,9 +34,9 @@ CREATE TABLE IF NOT EXISTS trainings (
 -- user_name и type_training такие же как в 2 верхних таблицах
 CREATE TABLE IF NOT EXISTS goals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_name TEXT NOT NULL,
-    date_start TEXT NOT NULL,
-    type_training TEXT NOT NULL,
-    distance_training TEXT NOT NULL,
-    date_finish TEXT NOT NULL
+    user_name TEXT NOT NULL, --такой же как в таблице пользователей
+    date_start TEXT NOT NULL, --сегодняшняя дата(автозаполнение)
+    type_training TEXT NOT NULL, --тип тренировки(ввод пльзоватя)
+    distance_training INTEGER NOT NULL, --дистанция цели(ввод пользователя в метрах)
+    date_finish TEXT NOT NULL --дедлайн(ввод пользователя и преобразование)
 )
