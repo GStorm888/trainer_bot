@@ -1,6 +1,6 @@
 #файл для пользования к базой данных
 import sqlite3
-from user import User, Training
+from user import User, Training, Goal
 """
 """
 """
@@ -156,16 +156,11 @@ class Database:
 
         cursor = connection.cursor()
 
-        cursor.execute("""INSERT INTO training (user_name, type_training, date_training, call_training, time_training, distance_training, description_training)
+        cursor.execute("""INSERT INTO trainings (user_name, type_training, date_training, call_training, time_training, distance_training, description_training)
         VALUES (?, ?, ?, ?, ?, ?, ?)""",
         [training.user_name, training.type_training, training.date_training, training.call_training,
         training.time_training, training.distance_training, training.description_training])
-
-        print(cursor.execute("""INSERT INTO training (user_name, type_training, date_training, call_training, time_training, distance_training, description_training)
-        VALUES (?, ?, ?, ?, ?, ?, ?)""",
-        [training.user_name, training.type_training, training.date_training, training.call_training,
-        training.time_training, training.distance_training, training.description_training])
-        )
+        connection.commit()
         return True
     """
     """
@@ -177,12 +172,12 @@ class Database:
 
         cursor = connection.cursor()
 
-        cursor.execute("SELECT * FROM training")
+        cursor.execute("SELECT * FROM trainings")
 
         all_trainings = cursor.fetchall()
         trainings = []
-        for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_trainig in all_trainings:
-            training = Training(user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
+        for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training in all_trainings:
+            training = (user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
             trainings.append(training) 
         if len(trainings) == 0:
             return None
@@ -192,32 +187,145 @@ class Database:
     """
     """ 
     @staticmethod
-    def view_workouts_to_type_and_date(type_training, date_training):
+    def get_all_training_by_user_name(user:User):
+        cursor.execute("SELECT * FROM trainings WHERE user_name = ?", [user.user_name])
+        all_trainings = cursor.fetchall()
+        trainings = []
+        for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training in all_trainings:
+            training = s(user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
+            trainings.append(training) 
+        if len(trainings) == 0:
+            return None
+        return trainings
+    """
+    """
+    """
+    """
+    @staticmethod
+    def view_workouts_to_type(type_training, user:User):
         connection = sqlite3.connect(Database.DATABASE)
 
         cursor = connection.cursor()
 
-        cursor.execute("SELECT * FROM training WHERE type_training=? AND date_training=?",
-        [type_training, date_training])
+        cursor.execute("SELECT * FROM trainings WHERE type_training=? AND user_name =?",
+        [type_training, user.user_name])
 
 
         all_training = cursor.fetchall()
         trainings = []
-        for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_trainig in all_training:
+        for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training in all_training:
             training = Training(user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
             trainings.append(training) 
         if len(trainings) == 0:
             return None
         return trainings
-    #для тестов чтобы не было мусорных пользователей и тренировок
+    """ 
+    """
+    """
+    """
+    @staticmethod
+    def view_workouts_to_date(date_training_start, date_training_fininsh, user_name):
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM trainings WHERE date_training=? AND date_training=? AND user_name =?",
+        [date_training, date_training_fininsh, user_name])
+
+
+        all_training = cursor.fetchall()
+        trainings = []
+        for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training in all_training:
+            training = Training(user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
+            trainings.append(training) 
+        if len(trainings) == 0:
+            return None
+        return trainings
+    """ 
+    """
+    """
+    """
+    @staticmethod
+    def view_workouts_to_type_and_date(type_training, date_training):
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM trainings WHERE type_training=? AND date_training=?",
+        [type_training, date_training])
+
+
+        all_training = cursor.fetchall()
+        trainings = []
+        for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training in all_training:
+            training = Training(user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
+            trainings.append(training) 
+        if len(trainings) == 0:
+            return None
+        return trainings
+    """ 
+    """
+    """
+    """
+    @staticmethod
+    def get_all_goals():
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM goals")
+
+        all_goals = cursor.fetchall()
+        goals = []
+        for id, user_name, date_start, type_training, distance_training, date_finish in all_goals:
+            goal = Goal(user_name, date_start, type_training, distance_training, date_finish, id)
+            goals.append(goal) 
+        if len(goals) == 0:
+            return None
+        return goals
+    """ 
+    """
+    """
+    """
+    @staticmethod
+    def get_all_goals_by_user_name(user:User):
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM goals WHERE user_name = ?", [user.user_name])
+
+        all_goals = cursor.fetchall()
+        goals = []
+        for id, user_name, date_start, type_training, distance_training, date_finish in all_goals:
+            goal = Goal(user_name, date_start, type_training, distance_training, date_finish, id)
+            goals.append(goal) 
+        if len(goals) == 0:
+            return None
+        return goals
+    """ 
+    """
+    """
+    """
+    @staticmethod #добавление цели
+    def set_goal(goal:Goal):
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
+
+        cursor = connection.cursor()
+
+        cursor.execute("""INSERT INTO goals (user_name, date_start, type_training, distance_training, date_finish)
+        VALUES (?, ?, ?, ?, ?)""",
+        [goal.user_name, goal.date_start, goal.type_training,
+         goal.distance_training, goal.date_finish])
+        connection.commit()
+        return True
+    #для тестов чтобы не было мусорных записей в БД
     # @staticmethod
     # def drop():
     #     connection = sqlite3.connect(Database.DATABASE)
 
     #     cursor = connection.cursor()
     #     cursor.execute("DROP TABLE users")
-    #     cursor.execute("DROP TABLE training")
-    #     # cursor.execute("""ALTER TABLE users
-    #     #                     ADD register TEXT NOT NULL;""")
+    #     cursor.execute("DROP TABLE trainings")
+    #     cursor.execute("DROP TABLE goals")
     #     return True
-

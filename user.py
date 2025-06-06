@@ -19,3 +19,12 @@ class Training:
     distance_training: int = None
     description_training: str = None
     id: int = None
+
+@dataclass
+class Goal:
+    user_name: str
+    date_start: str
+    type_training: str
+    distance_training: str
+    date_finish: str
+    id: int = None

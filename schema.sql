@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
 --схема отдельно от users, но зависищая от пользователя
 --для каждой тренировки отдельная строка в БД
 --имя пользователя уже не уникально
-CREATE TABLE IF NOT EXISTS training (
+CREATE TABLE IF NOT EXISTS trainings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_name TEXT NOT NULL, --должен быть такой же как и в users(автоматизировать)
     type_training TEXT NOT NULL, --тип тренировки
@@ -23,4 +23,20 @@ CREATE TABLE IF NOT EXISTS training (
     time_training INTEGER, --длительность тренировки(вместо возможна distance_training)
     distance_training INTEGER, --дистанция тренировки(вместо возможна time_training)
     description_training TEXT --описание пользователя
+);
+-- """
+-- """
+-- """
+-- """
+-- схема описывающая цели пользователей
+-- зависит от 2 верхних таблиц
+-- каждая цель - отдельная строка
+-- user_name и type_training такие же как в 2 верхних таблицах
+CREATE TABLE IF NOT EXISTS goals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_name TEXT NOT NULL,
+    date_start TEXT NOT NULL,
+    type_training TEXT NOT NULL,
+    distance_training TEXT NOT NULL,
+    date_finish TEXT NOT NULL
 )
