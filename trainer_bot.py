@@ -204,7 +204,7 @@ def start(message):
         markup = types.InlineKeyboardMarkup()
         register_bttn = types.InlineKeyboardButton(text='register', callback_data='register' )
         markup.add(register_bttn)
-        bot.send_message(message.chat.id, """get_all_users вы не зарегистрированы, чтобы продолжить использовать бота зарегистрируйтесь""", reply_markup=markup)
+        bot.send_message(message.chat.id, """вы не зарегистрированы, чтобы продолжить использовать бота зарегистрируйтесь""", reply_markup=markup)
         return
     elif Database.examination_status_log_in(0, telegram_user_id) is not None:#если пользователь не активен
         markup = types.InlineKeyboardMarkup()
@@ -216,7 +216,7 @@ def start(message):
         markup = types.InlineKeyboardMarkup()
         register_bttn = types.InlineKeyboardButton(text='register', callback_data='register' )
         markup.add(register_bttn)
-        bot.send_message(message.chat.id, """search_user_by_telegram_id вы не зарегистрированы, чтобы продолжить использовать бота зарегистрируйтесь""", reply_markup=markup)
+        bot.send_message(message.chat.id, """вы не зарегистрированы, чтобы продолжить использовать бота зарегистрируйтесь""", reply_markup=markup)
         return
 
     markup = types.InlineKeyboardMarkup()#если все хорошо
@@ -691,7 +691,29 @@ def view_workouts_to_all(message):#просмотр всех тренирово�
     telegram_user_id = str(message.chat.id)
     user = Database.search_user_by_telegram_id(telegram_user_id)
     all_trainings = Database.get_all_training_by_user_name(user.user_name)
-    bot.send_message(message.chat.id, f"""a: {all_trainings}""")
+    count = 0
+    print(all_trainings)
+    bot.send_message(message.chat.id, f"""готово, все тренировки пользователя- {user.user_name}""")
+    for workouts in all_trainings:
+        print(workouts)
+        print(workouts.user_name)
+
+        count += 1
+        print_text = f"""
+{count}:
+дата тренировки {workouts.date_training};
+созженные каллорие - {workouts.call_training}
+"""
+        if workouts.time_training is not None:
+            print_text += f"""время тренировки - {workouts.time_training}
+"""
+        if workouts.distance_training is not None:
+            print_text += f"""дистанция тренировки - {workouts.distance_training}
+"""
+        if workouts.description_training is not None:
+            print_text += f"""заметка к тренировке - {workouts.description_training}
+"""
+        bot.send_message(message.chat.id, print_text)
 """
 """
 """
@@ -966,9 +988,6 @@ def add_reminder(message):
     bot.send_message(message.chat.id, "Выбери дни в которые нужны напоминания", reply_markup=markup)
 """"""
 def processing_day(day_int):
-    if message.text == "Назад":
-        handle_button(message)
-        return
     global days_lst
     days_lst.append(day_int)
 """"""

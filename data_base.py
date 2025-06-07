@@ -222,7 +222,7 @@ class Database:
         all_trainings = cursor.fetchall()
         trainings = []
         for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training in all_trainings:
-            training = (user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
+            training = Training(user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
             trainings.append(training) 
         if len(trainings) == 0:
             return None
@@ -435,7 +435,10 @@ class Database:
         cursor = connection.cursor()
         cursor.execute("""DELETE FROM reminder WHERE user_name=?""", [user_name])
         connection.commit()
-
+    """ 
+    """
+    """
+    """
     @staticmethod #удаление профиля и всех данных
     def delete_account(user_name):
         connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
