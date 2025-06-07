@@ -31,7 +31,6 @@ def test(message):
     reminders = Database.get_all_reminder()
     print("reminders", reminders, "\n")
     print("\n")
-
     # markup = types.ReplyKeyboardRemove()
     # bot.send_message(message.from_user.id, "Клавиатура удалена", reply_markup=markup)
 
@@ -133,31 +132,41 @@ def callback_query(call):
     elif call.data == "monday": #напоминание на пн
         bot.send_message(message.chat.id, """Хорошо, в Понедельник, в какие еще дни?""")
         processing_day(0)
-    elif call.data == "tuesday": #напоминание на пн
+    elif call.data == "tuesday": #напоминание на вт
         bot.send_message(message.chat.id, """Хорошо, во Вторник, в какие еще дни?""")
         processing_day(1)
-    elif call.data == "wednesday": #напоминание на пн
+    elif call.data == "wednesday": #напоминание на ср
         bot.send_message(message.chat.id, """Хорошо, в Среду, в какие еще дни?""")
         processing_day(2)
-    elif call.data == "thursday": #напоминание на пн
+    elif call.data == "thursday": #напоминание на чт
         bot.send_message(message.chat.id, """Хорошо, в Четверг, в какие еще дни?""")
         processing_day(3)
-    elif call.data == "friday": #напоминание на пн
+    elif call.data == "friday": #напоминание на пт
         bot.send_message(message.chat.id, """Хорошо, в Пятницу, в какие еще дни?""")
         processing_day(4)
-    elif call.data == "saturday": #напоминание на пн
+    elif call.data == "saturday": #напоминание на сб
         bot.send_message(message.chat.id, """Хорошо, в Субботу, в какие еще дни?""")
         processing_day(5)
-    elif call.data == "sunday": #напоминание на пн
+    elif call.data == "sunday": #напоминание на вс
         bot.send_message(message.chat.id, """Хорошо, в Воскресенье, в какие еще дни?""")
         processing_day(6)
     elif call.data == "finish_reminder": #регистрации времени для напоминания
+        bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, """Хорошо, в какое время?""")
         bot.register_next_step_handler(message, processing_time)
-    elif call.data == "del_reminder": #регистрации времени для напоминания
+    elif call.data == "del_reminder": #удаление всех напоминаний
+        bot.delete_message(message.chat.id, message.message_id)
         del_reminder(message)
-    elif call.data == "add_reminder": #регистрации времени для напоминания
+    elif call.data == "add_reminder": #добаление напоминаний
+        bot.delete_message(message.chat.id, message.message_id)
         add_reminder(message)
+    elif call.data == "del_reminder_yes": #удаление всех напоминаний финищ
+        bot.delete_message(message.chat.id, message.message_id)
+        processing_del_reminder_yes(message)
+    elif call.data == "del_reminder_no": #отмена удаления всех напоминаний
+        bot.delete_message(message.chat.id, message.message_id)
+        bot.send_message(message.chat.id, "правильно, не нужно этого делать")
+        help(message)
 """
 """
 """
@@ -576,12 +585,22 @@ def view_goals(message):
 @bot.message_handler(commands=['statistics'])  #функция statistics для  просмотра статистики(не работает)
 def statistics(message):
     #type or type and date or date
-    ...
+    markup = types.InlineKeyboardMarkup()
+    type_training = types.InlineKeyboardButton(text="посмотреть за тип", callback_data="type_training_statistics")
+    date_training = types.InlineKeyboardButton(text="посмотреть за период", callback_data="date_training_statistics")
+    type_and_date_training = types.InlineKeyboardButton(text="посмотреть за тип и период", callback_data="type_and_date_training_statistics")
+    all_training = types.InlineKeyboardButton(text="посмотреть все тренировки", callback_data="all_training_statistics")
+    markup.add(type_training)
+    markup.add(date_training)
+    markup.add(type_and_date_training)
+    markup.add(all_training)
+    bot.send_message(message.chat.id, """выбери что ты хочешь посмотреть""", reply_markup=markup)
+
 """
 """
 """
 """
-@bot.message_handler(commands=['reminder'])  #функция reminder для  работы с напоминаниями(не работает)
+@bot.message_handler(commands=['reminder'])  #функция reminder для  работы с напоминаниями(работает нужен вывод)
 def reminder(message):
     markup = types.InlineKeyboardMarkup()
     telegram_user_id = str(message.chat.id)
@@ -596,8 +615,7 @@ def reminder(message):
         bot.send_message(message.chat.id, "ты хочешь удалить или добавить напоминания?", reply_markup=markup)
     else: 
         add_reminder(message)
-
-
+""""""
 def add_reminder(message):
     global days_lst
     days_lst = []
@@ -639,7 +657,18 @@ def processing_time(message):
 """"""
 """"""
 def del_reminder(message):
-    ...
+    markup = types.InlineKeyboardMarkup()
+    del_reminder_yes = types.InlineKeyboardButton(text="да", callback_data="del_reminder_yes")
+    del_reminder_no = types.InlineKeyboardButton(text="нет", callback_data="del_reminder_no")
+    markup.add(del_reminder_yes, del_reminder_no)
+    bot.send_message(message.chat.id, """вы уверены?""", reply_markup=markup)
+""""""
+def processing_del_reminder_yes(message):
+    telegram_user_id = str(message.chat.id)
+    user = Database.search_user_by_telegram_id(telegram_user_id)
+    user_name = user.user_name
+    Database.delete_reminder(user_name)
+    bot.send_message(message.chat.id, """все ваши напоминания удалены""")
 """
 """
 """

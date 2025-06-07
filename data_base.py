@@ -388,6 +388,14 @@ class Database:
     """
     """
     """
+    @staticmethod #удаление всех напоминаний пользователя
+    def delete_reminder(user_name):
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
+
+        cursor = connection.cursor()
+        cursor.execute("""DELETE FROM reminder WHERE user_name=?""", [user_name])
+        connection.commit()
+
     @staticmethod #удаление профиля и всех данных
     def delete_account(user_name):
         connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
