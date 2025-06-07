@@ -88,9 +88,9 @@ def callback_query(call):
     elif call.data == "view_goals":#функция help
         bot.delete_message(message.chat.id, message.message_id)
         view_goals(message)      
-    elif call.data == "statistic":#функция help
+    elif call.data == "statistics":#функция help
         bot.delete_message(message.chat.id, message.message_id)
-        statistic(message)      
+        statistics(message)      
     elif call.data == "reminder":#функция help
         bot.delete_message(message.chat.id, message.message_id)
         reminder(message)      
@@ -153,7 +153,7 @@ def callback_query(call):
     elif call.data == "finish_reminder": #регистрации времени для напоминания
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, """Хорошо, в какое время?""")
-        bot.register_next_step_handler(message, processing_time)
+        bot.register_next_step_handler(message, processing_time_reminder)
     elif call.data == "del_reminder": #удаление всех напоминаний
         bot.delete_message(message.chat.id, message.message_id)
         del_reminder(message)
@@ -167,6 +167,22 @@ def callback_query(call):
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, "правильно, не нужно этого делать")
         help(message)
+    elif call.data == "type_statistics": #просмотр статистики по типу
+        bot.delete_message(message.chat.id, message.message_id)
+        bot.send_message(message.chat.id, "хорошо, какой тип тренировок?")
+        bot.register_next_step_handler(message, type_statistics)
+    elif call.data == "period_statistics": #просмотр статистики по периоду
+        bot.delete_message(message.chat.id, message.message_id)
+        bot.send_message(message.chat.id, "хорошо, какой период?(в днях)")
+        bot.register_next_step_handler(message, period_statistics)
+    elif call.data == "type_and_period_statistics": #просмотр статистики по типу и периоду
+        bot.delete_message(message.chat.id, message.message_id)
+        bot.send_message(message.chat.id, "хорошо, какой тип?")
+        bot.register_next_step_handler(message, type_and_period_statistics)
+    elif call.data == "all_statistics": #просмотр всей статистики 
+        bot.delete_message(message.chat.id, message.message_id)
+        bot.send_message(message.chat.id, "хорошо, сейчас отправлю")
+        bot.register_next_step_handler(message, all_statistics)
 """
 """
 """
@@ -454,7 +470,7 @@ def save_training(message):#сохранение в БД
 """"""
 """"""
 """"""
-@bot.message_handler(commands=['view_workouts'])#функция view_workouts для просмотра тренировок(работает, нужен красивый вывод)
+@bot.message_handler(commands=['view_workouts'])#функция view_workouts для просмотра тренировок
 def view_workouts(message):#выбор как смотреть тренировки
     markup = types.InlineKeyboardMarkup()
     type_training = types.InlineKeyboardButton(text="посмотреть за тип", callback_data="type_training")
@@ -478,13 +494,31 @@ def view_workouts_to_type_register_type(message):#обработка если в
     view_workouts_to_type_print(message)
 """"""
 def view_workouts_to_type_print(message):#вывод тренировок если выбрал тип
+    telegram_user_id = str(message.chat.id)
     if Database.search_user_by_telegram_id(telegram_user_id) is None:
         bot.send_message(message.chat.id, """я не нашел у вас тренировок""")
-    telegram_user_id = str(message.chat.id)
+    count = 0
     user = Database.search_user_by_telegram_id(telegram_user_id)
     user_name = user.user_name
     workouts_to_type = Database.view_workouts_to_type(type_training, user_name)
-    bot.send_message(message.chat.id, f"""готово, {workouts_to_type}""")
+    bot.send_message(message.chat.id, f"""готово, все тренировки пользователя- {workouts_to_type[0].user_name}, по типу {workouts_to_type[0].type_training}""")
+    for workouts in workouts_to_type:
+        count += 1
+        print_text = f"""
+{count}:
+дата тренировки {workouts.date_training};
+созженные каллорие - {workouts.call_training}
+"""
+        if workouts.time_training is not None:
+            print_text += f"""время тренировки - {workouts.time_training}
+"""
+        if workouts.distance_training is not None:
+            print_text += f"""дистанция тренировки - {workouts.distance_training}
+"""
+        if workouts.description_training is not None:
+            print_text += f"""заметка к тренировке - {workouts.description_training}
+"""
+        bot.send_message(message.chat.id, print_text)
 """"""
 """"""
 def view_workouts_to_date(message):#если выбрал период
@@ -503,7 +537,25 @@ def view_workouts_to_date_print(message):# вывод тренировок ес�
     user = Database.search_user_by_telegram_id(telegram_user_id)
     user_name = user.user_name
     workouts_to_date = Database.view_workouts_to_date(date_start, today, user_name)
-    bot.send_message(message.chat.id, f"""а>>> {workouts_to_date}""")
+    count = 0
+    bot.send_message(message.chat.id, f"""готово, все тренировки пользователя- {workouts_to_date[0].user_name}, с {date_start}""")
+    for workouts in workouts_to_date:
+        count += 1
+        print_text = f"""
+{count}:
+дата тренировки {workouts.date_training};
+созженные каллорие - {workouts.call_training}
+"""
+        if workouts.time_training is not None:
+            print_text += f"""время тренировки - {workouts.time_training}
+"""
+        if workouts.distance_training is not None:
+            print_text += f"""дистанция тренировки - {workouts.distance_training}
+"""
+        if workouts.description_training is not None:
+            print_text += f"""заметка к тренировке - {workouts.description_training}
+"""
+        bot.send_message(message.chat.id, print_text)
 """"""
 """"""
 def view_workouts_to_type_and_date(message):#если выбрал тип и период запрос типа
@@ -528,7 +580,28 @@ def view_workouts_to_type_and_date_print(message):#вывод тренирово
     user = Database.search_user_by_telegram_id(telegram_user_id)
     user_name = user.user_name
     workouts_to_type_and_date = Database.view_workouts_to_type_and_date(type_training, date_start, today, user_name)
-    bot.send_message(message.chat.id, f"""а>>> {workouts_to_type_and_date}""")
+
+    count = 0
+    bot.send_message(message.chat.id, f"""готово, все тренировки пользователя- {workouts_to_type_and_date[0].user_name}, по типу {workouts_to_type_and_date[0].type_training} с {date_start}""")
+    for workouts in workouts_to_type_and_date:
+        count += 1
+        print_text = f"""
+{count}:
+дата тренировки {workouts.date_training};
+созженные каллорие - {workouts.call_training}
+"""
+        if workouts.time_training is not None:
+            print_text += f"""время тренировки - {workouts.time_training}
+"""
+        if workouts.distance_training is not None:
+            print_text += f"""дистанция тренировки - {workouts.distance_training}
+"""
+        if workouts.description_training is not None:
+            print_text += f"""заметка к тренировке - {workouts.description_training}
+"""
+
+    
+        bot.send_message(message.chat.id, print_text)
 """"""
 """"""
 def view_workouts_to_all(message):#просмотр всех тренировок пользователя
@@ -577,25 +650,154 @@ def set_goal_save(message):#сохранение данных в БД
 """
 @bot.message_handler(commands=['view_goals'])  #функция view_goals для  просмотра целей и их прогресса(не работает)
 def view_goals(message):
-    ...
+    telegram_user_id = str(message.chat.id)
+    user = Database.search_user_by_telegram_id(telegram_user_id)
+    all_gpals = Database.get_all_goal_by_user_name(user.user_name)
+    bot.send_message(message.chat.id, f"""a: {all_gpals}""")
 """
 """
 """
 """
-@bot.message_handler(commands=['statistics'])  #функция statistics для  просмотра статистики(не работает)
+@bot.message_handler(commands=['statistics'])  #функция statistics для  просмотра статистики(работает нужен вывод)
 def statistics(message):
     #type or type and date or date
     markup = types.InlineKeyboardMarkup()
-    type_training = types.InlineKeyboardButton(text="посмотреть за тип", callback_data="type_training_statistics")
-    date_training = types.InlineKeyboardButton(text="посмотреть за период", callback_data="date_training_statistics")
-    type_and_date_training = types.InlineKeyboardButton(text="посмотреть за тип и период", callback_data="type_and_date_training_statistics")
-    all_training = types.InlineKeyboardButton(text="посмотреть все тренировки", callback_data="all_training_statistics")
-    markup.add(type_training)
-    markup.add(date_training)
-    markup.add(type_and_date_training)
-    markup.add(all_training)
+    type_statistics = types.InlineKeyboardButton(text="посмотреть за тип", callback_data="type_statistics")
+    period_statistics = types.InlineKeyboardButton(text="посмотреть за период", callback_data="period_statistics")
+    type_and_period_statistics = types.InlineKeyboardButton(text="посмотреть за тип и период", callback_data="type_and_period_statistics")
+    all_statistics = types.InlineKeyboardButton(text="посмотреть всю статистику", callback_data="all_statistics")
+    markup.add(type_statistics)
+    markup.add(period_statistics)
+    markup.add(type_and_period_statistics)
+    markup.add(all_statistics)
     bot.send_message(message.chat.id, """выбери что ты хочешь посмотреть""", reply_markup=markup)
+""""""
+""""""
+def type_statistics(message):#обработка если выбрал тип
+    global type_training
+    type_training = message.text
+    telegram_user_id = str(message.chat.id)
+    statistic_to_type_print(message)
+""""""
+def statistic_to_type_print(message):#вывод тренировок если выбрал тип
+    telegram_user_id = str(message.chat.id)
+    if Database.search_user_by_telegram_id(telegram_user_id) is None:
+        bot.send_message(message.chat.id, """я не нашел у вас тренировок""")
+    user = Database.search_user_by_telegram_id(telegram_user_id)
+    user_name = user.user_name
+    workouts_to_type = Database.view_workouts_to_type(type_training, user_name)
 
+    count = 0
+    bot.send_message(message.chat.id, f"""готово, статистика пользователя- {workouts_to_type[0].user_name}, по типу {workouts_to_type[0].type_training}""")
+    for workouts in workouts_to_type:
+        count += 1
+        print_text = f"""
+{count}:
+дата тренировки {workouts.date_training};
+созженные каллорие - {workouts.call_training}
+"""
+        if workouts.time_training is not None:
+            print_text += f"""время тренировки - {workouts.time_training}
+"""
+        if workouts.distance_training is not None:
+            print_text += f"""дистанция тренировки - {workouts.distance_training}
+"""
+        if workouts.description_training is not None:
+            print_text += f"""заметка к тренировке - {workouts.description_training}
+"""
+
+    
+        bot.send_message(message.chat.id, print_text)
+""""""
+""""""
+def period_statistics(message):#если выбрал период
+    global period_training
+    period_training = message.text
+    period_statistics_print(message)
+""""""
+def period_statistics_print(message):# вывод статистики если выбрал период
+    today = datetime.datetime.today().date()
+    date_start = today - datetime.timedelta(days=int(period_training))
+    telegram_user_id = str(message.chat.id)
+    user = Database.search_user_by_telegram_id(telegram_user_id)
+    user_name = user.user_name
+    workouts_to_date = Database.view_workouts_to_date(date_start, today, user_name)
+    count = 0
+
+    bot.send_message(message.chat.id, f"""готово, статистика пользователя- {workouts_to_date[0].user_name}, c {workouts_to_date[0].date_training}""")
+    for workouts in workouts_to_date:
+        count += 1
+        print_text = f"""
+{count}:
+дата тренировки {workouts.date_training};
+созженные каллорие - {workouts.call_training}
+"""
+        if workouts.time_training is not None:
+            print_text += f"""время тренировки - {workouts.time_training}
+"""
+        if workouts.distance_training is not None:
+            print_text += f"""дистанция тренировки - {workouts.distance_training}
+"""
+        if workouts.description_training is not None:
+            print_text += f"""заметка к тренировке - {workouts.description_training}
+"""
+
+    
+        bot.send_message(message.chat.id, print_text)
+""""""
+""""""
+def type_and_period_statistics(message):#если выбрал тип и период запрос типа
+    bot.send_message(message.chat.id, """Хорошо, какой тип тренировки?""")
+    bot.register_next_step_handler(message, type_and_period_statistics_register_type)
+""""""
+def type_and_period_statistics_register_type(message):#обработка типа и запрос периода если выбрал тип и период
+    global type_training
+    type_training = message.text
+    bot.send_message(message.chat.id, """Хапомнил, какой промежуток времени?""")
+    bot.register_next_step_handler(message, type_and_period_statistics_register_period)
+""""""
+def type_and_period_statistics_register_period(message):#обработка периода если выбрал тип и период
+    global period_training
+    period_training = message.text
+    type_and_period_statistics_print(message)
+""""""
+def type_and_period_statistics_print(message):#вывод статистики если выбрал тип и период
+    today = datetime.datetime.today().date()
+    date_start = today - datetime.timedelta(days=int(period_training))
+    telegram_user_id = str(message.chat.id)
+    user = Database.search_user_by_telegram_id(telegram_user_id)
+    user_name = user.user_name
+    workouts_to_type_and_date = Database.view_workouts_to_type_and_date(type_training, date_start, today, user_name)
+    count = 0
+    bot.send_message(message.chat.id, f"""готово, статистика пользователя- {workouts_to_type_and_date[0].user_name},
+    по типу {workouts_to_type_and_date[0].type training}, c {workouts_to_type_and_date[0].date_training}""")
+    
+    for workouts in workouts_to_type_and_date:
+        count += 1
+        print_text = f"""
+{count}:
+дата тренировки {workouts.date_training};
+созженные каллорие - {workouts.call_training}
+"""
+        if workouts.time_training is not None:
+            print_text += f"""время тренировки - {workouts.time_training}
+"""
+        if workouts.distance_training is not None:
+            print_text += f"""дистанция тренировки - {workouts.distance_training}
+"""
+        if workouts.description_training is not None:
+            print_text += f"""заметка к тренировке - {workouts.description_training}
+"""
+
+    
+        bot.send_message(message.chat.id, print_text)
+""""""
+""""""
+def all_statistics(message):#просмотр статистики всех тренировок
+    telegram_user_id = str(message.chat.id)
+    user = Database.search_user_by_telegram_id(telegram_user_id)
+    all_trainings = Database.get_all_training_by_user_name(user.user_name)
+    bot.send_message(message.chat.id, f"""a: {all_trainings}""")
 """
 """
 """
@@ -644,7 +846,7 @@ def processing_day(day_int):
     global days_lst
     days_lst.append(day_int)
 """"""
-def processing_time(message):
+def processing_time_reminder(message):
     global time_reminder
     time_reminder = message.text
     telegram_user_id = str(message.chat.id)

@@ -333,6 +333,46 @@ class Database:
     """
     """
     """
+    @staticmethod#промотр целей тренировок(для тестов)
+    def get_all_goal():
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM goals")
+
+        all_goals = cursor.fetchall()
+        goals = []
+        for id, user_name, date_start, type_training, distance_training, date_finish in all_goals:
+            goal = (user_name, date_start, type_training, distance_training, date_finish,  id)
+            goals.append(goal) 
+        if len(goals) == 0:
+            return None
+        return goals
+    """ 
+    """
+    """
+    """
+    @staticmethod#промотр целей тренировок(для тестов)
+    def get_all_goal_by_user_name(user_name):
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM goals WHERE user_name=?", [user_name])
+
+        all_goals = cursor.fetchall()
+        goals = []
+        for id, user_name, date_start, type_training, distance_training, date_finish in all_goals:
+            goal = (user_name, date_start, type_training, distance_training, date_finish,  id)
+            goals.append(goal) 
+        if len(goals) == 0:
+            return None
+        return goals
+    """ 
+    """
+    """
+    """
     @staticmethod #добавление напоминаний
     def set_reminder(reminder:Reminder):
         connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
