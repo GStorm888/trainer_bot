@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS trainings (
     call_training TEXT NOT NULL, --каллории(запрос пользователя)
     time_training INTEGER, --длительность тренировки(вместо возможна distance_training)
     distance_training INTEGER, --дистанция тренировки(вместо возможна time_training)
-    description_training TEXT --описание пользователя
+    description_training TEXT --описание пользователя(не обязательно)
 );
 -- """
 -- """
@@ -40,7 +40,14 @@ CREATE TABLE IF NOT EXISTS goals (
     distance_training INTEGER NOT NULL, --дистанция цели(ввод пользователя в метрах)
     date_finish TEXT NOT NULL --дедлайн(ввод пользователя и преобразование)
 );
-
+-- """
+-- """
+-- """
+-- """
+-- схема описывающая напоминания пользователей
+-- зависит от users
+-- каждое напоминание - отдельная строка
+-- user_name такой же как в 3 верхних таблицах
 CREATE TABLE IF NOT EXISTS reminder (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_name TEXT NOT NULL, --такой же как в таблице пользователей
