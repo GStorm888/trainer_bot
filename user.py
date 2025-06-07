@@ -1,6 +1,5 @@
 #класс для описания пользователя
 from dataclasses import dataclass
-from datetime import date
 @dataclass #класс пользователя
 class User:
     user_name: str
@@ -28,3 +27,18 @@ class Goal:
     distance_training: str
     date_finish: str
     id: int = None
+
+@dataclass#класс напоминаний
+class Reminder:
+    user_name: str #такой же как в других таблицах
+    day_reminder: int #день недели 0-6
+    time_reminder:str #время напоминания(HH-MM)
+    id:int = None
+    #дни недели и их int значения
+    #0-пн
+    #1-вт
+    #2-ср
+    #3-чт
+    #4-пт
+    #5-сб
+    #6-вс

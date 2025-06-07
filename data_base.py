@@ -1,6 +1,6 @@
 #файл для пользования к базой данных
 import sqlite3
-from user import User, Training, Goal
+from user import User, Training, Goal, Reminder
 """
 """
 """
@@ -333,6 +333,61 @@ class Database:
     """
     """
     """
+    @staticmethod #добавление напоминаний
+    def set_reminder(reminder:Reminder):
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
+
+        cursor = connection.cursor()
+
+        cursor.execute("""INSERT INTO reminder (user_name, day_reminder, time_reminder)
+        VALUES (?, ?, ?)""",
+        [reminder.user_name, reminder.day_reminder, reminder.time_reminder,])
+        connection.commit()
+        return True
+    """ 
+    """
+    """
+    """
+    @staticmethod#промотр всех тренировок(для тестов)
+    def get_all_reminder():
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM reminder")
+
+        all_reminders = cursor.fetchall()
+        reminders = []
+        for id, user_name, day_reminder, time_reminder in all_reminders:
+            reminder = (user_name, day_reminder, time_reminder,  id)
+            reminders.append(reminder) 
+        if len(reminders) == 0:
+            return None
+        return reminders
+    """ 
+    """
+    """
+    """
+    @staticmethod#просмотр всех целей по имени пользователя
+    def get_all_reminder_by_user_name(user_name):
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM reminder WHERE user_name = ?", [user_name])
+
+        all_reminder = cursor.fetchall()
+        reminders = []
+        for id, user_name, day_reminder, time_reminder in all_reminder:
+            reminder = Reminder(user_name, day_reminder, time_reminder, id)
+            reminders.append(reminder) 
+        if len(reminders) == 0:
+            return None
+        return reminders
+    """ 
+    """
+    """
+    """
     @staticmethod #удаление профиля и всех данных
     def delete_account(user_name):
         connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
@@ -342,5 +397,6 @@ class Database:
         cursor.execute("""DELETE FROM users WHERE user_name=?""", [user_name])
         cursor.execute("""DELETE FROM trainings WHERE user_name=?""", [user_name])
         cursor.execute("""DELETE FROM goals WHERE user_name=?""", [user_name])
+        cursor.execute("""DELETE FROM reminder WHERE user_name=?""", [user_name])
         connection.commit()
         return True

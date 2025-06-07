@@ -9,7 +9,7 @@ import hashlib
 import datetime
 from config import TOKEN#импорт файлов проекта
 from data_base import Database
-from user import User, Training, Goal
+from user import User, Training, Goal, Reminder
 """
 """
 """
@@ -28,6 +28,8 @@ def test(message):
     print("trainings", training, "\n")
     goals = Database.get_all_goals()
     print("goals", goals, "\n")
+    reminders = Database.get_all_reminder()
+    print("reminders", reminders, "\n")
     print("\n")
 
     # markup = types.ReplyKeyboardRemove()
@@ -84,9 +86,9 @@ def callback_query(call):
     elif call.data == "set_goal":#функция help
         bot.delete_message(message.chat.id, message.message_id)
         set_goal(message)      
-    elif call.data == "view_goal":#функция help
+    elif call.data == "view_goals":#функция help
         bot.delete_message(message.chat.id, message.message_id)
-        view_goal(message)      
+        view_goals(message)      
     elif call.data == "statistic":#функция help
         bot.delete_message(message.chat.id, message.message_id)
         statistic(message)      
@@ -128,6 +130,34 @@ def callback_query(call):
     elif call.data == "del_no_2": #удаление аккаунта конец
         bot.delete_message(message.chat.id, message.message_id)
         processing_del_no_2(message)
+    elif call.data == "monday": #напоминание на пн
+        bot.send_message(message.chat.id, """Хорошо, в Понедельник, в какие еще дни?""")
+        processing_day(0)
+    elif call.data == "tuesday": #напоминание на пн
+        bot.send_message(message.chat.id, """Хорошо, во Вторник, в какие еще дни?""")
+        processing_day(1)
+    elif call.data == "wednesday": #напоминание на пн
+        bot.send_message(message.chat.id, """Хорошо, в Среду, в какие еще дни?""")
+        processing_day(2)
+    elif call.data == "thursday": #напоминание на пн
+        bot.send_message(message.chat.id, """Хорошо, в Четверг, в какие еще дни?""")
+        processing_day(3)
+    elif call.data == "friday": #напоминание на пн
+        bot.send_message(message.chat.id, """Хорошо, в Пятницу, в какие еще дни?""")
+        processing_day(4)
+    elif call.data == "saturday": #напоминание на пн
+        bot.send_message(message.chat.id, """Хорошо, в Субботу, в какие еще дни?""")
+        processing_day(5)
+    elif call.data == "sunday": #напоминание на пн
+        bot.send_message(message.chat.id, """Хорошо, в Воскресенье, в какие еще дни?""")
+        processing_day(6)
+    elif call.data == "finish_reminder": #регистрации времени для напоминания
+        bot.send_message(message.chat.id, """Хорошо, в какое время?""")
+        bot.register_next_step_handler(message, processing_time)
+    elif call.data == "del_reminder": #регистрации времени для напоминания
+        del_reminder(message)
+    elif call.data == "add_reminder": #регистрации времени для напоминания
+        add_reminder(message)
 """
 """
 """
@@ -407,7 +437,7 @@ def save_training(message):#сохранение в БД
     telegram_user_id = str(message.chat.id)
     user_name = Database.search_user_by_telegram_id(telegram_user_id).user_name
     date_training = datetime.datetime.today().date()
-    training = Training(user_name, type_training, date_training, call_training,
+    training = Training(str(user_name), type_training, date_training, call_training,
                         time_training, distance_training, description_training)
     Database.add_training(training)
     bot.send_message(message.chat.id, """Хорошо, я записал твою тренировку""")
@@ -536,6 +566,84 @@ def set_goal_save(message):#сохранение данных в БД
 """
 """
 """
+@bot.message_handler(commands=['view_goals'])  #функция view_goals для  просмотра целей и их прогресса(не работает)
+def view_goals(message):
+    ...
+"""
+"""
+"""
+"""
+@bot.message_handler(commands=['statistics'])  #функция statistics для  просмотра статистики(не работает)
+def statistics(message):
+    #type or type and date or date
+    ...
+"""
+"""
+"""
+"""
+@bot.message_handler(commands=['reminder'])  #функция reminder для  работы с напоминаниями(не работает)
+def reminder(message):
+    markup = types.InlineKeyboardMarkup()
+    telegram_user_id = str(message.chat.id)
+    user = Database.search_user_by_telegram_id(telegram_user_id)
+    user_name = user.user_name
+    
+    if Database.get_all_reminder_by_user_name(user_name) is not None:
+        markup = types.InlineKeyboardMarkup()
+        add_reminder_bttn = types.InlineKeyboardButton(text='add_reminder', callback_data='add_reminder')
+        del_reminder_bttn = types.InlineKeyboardButton(text='del_reminder', callback_data='del_reminder')
+        markup.add(add_reminder_bttn, del_reminder_bttn)
+        bot.send_message(message.chat.id, "ты хочешь удалить или добавить напоминания?", reply_markup=markup)
+    else: 
+        add_reminder(message)
+
+
+def add_reminder(message):
+    global days_lst
+    days_lst = []
+    markup = types.InlineKeyboardMarkup()
+    
+    monday = types.InlineKeyboardButton(text='monday', callback_data='monday')
+    tuesday = types.InlineKeyboardButton(text='tuesday', callback_data='tuesday')
+
+    wednesday = types.InlineKeyboardButton(text='wednesday', callback_data='wednesday')
+    thursday = types.InlineKeyboardButton(text='thursday', callback_data='thursday')
+
+    friday = types.InlineKeyboardButton(text='friday', callback_data='friday')
+    saturday = types.InlineKeyboardButton(text='saturday', callback_data='saturday')
+
+    sunday = types.InlineKeyboardButton(text='sunday', callback_data='sunday')
+    finish_reminder = types.InlineKeyboardButton(text='это все', callback_data='finish_reminder')
+
+    markup.add(monday, tuesday)
+    markup.add(wednesday, thursday)
+    markup.add(friday, saturday)
+    markup.add(sunday, finish_reminder)
+
+    bot.send_message(message.chat.id, "Выбери дни в которые нужны напоминания", reply_markup=markup)
+""""""
+def processing_day(day_int):
+    global days_lst
+    days_lst.append(day_int)
+""""""
+def processing_time(message):
+    global time_reminder
+    time_reminder = message.text
+    telegram_user_id = str(message.chat.id)
+    user = Database.search_user_by_telegram_id(telegram_user_id)
+    user_name = user.user_name
+    for day_reminder in days_lst:
+        reminder = Reminder(user_name, day_reminder, time_reminder)
+        Database.set_reminder(reminder)
+    bot.send_message(message.chat.id, "Я буду вам напоминать")
+""""""
+""""""
+def del_reminder(message):
+    ...
+"""
+"""
+"""
+""" 
 @bot.message_handler(commands=['delete_account'])#функция для удаления аккаунта
 def delete_account(message):#вопрос уверенности
     markup = types.InlineKeyboardMarkup()
