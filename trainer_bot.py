@@ -440,18 +440,18 @@ def add_workout(message):#проверки и начальное сообщен�
 
     else:#если все проверки пройдены
         bot.send_message(message.chat.id, """Я готов записать твою тренировку, как ее назвать?""")
-        bot.register_next_step_handler(message, type_training)
+        bot.register_next_step_handler(message, type_training_register_type)
 """"""
-def type_training(message):#запрос типа тренировки
+def type_training_register_type(message):#обработка типа тренировки и запрос каллорий
     if message.text == "Назад":
         handle_button(message)
         return
     global type_training
     type_training = message.text
     bot.send_message(message.chat.id, """Ого, и сколько ты сжег каллорий?""")
-    bot.register_next_step_handler(message, call_training)
+    bot.register_next_step_handler(message, call_training_register_call)
 """"""
-def call_training(message):#запрос каллорий и выбор продолжительность или дистанция
+def call_training_register_call(message):#обработка каллорий и выбор продолжительность или дистанция
     if message.text == "Назад":
         handle_button(message)
         return
@@ -463,7 +463,7 @@ def call_training(message):#запрос каллорий и выбор прод
     markup.add(time, distance)
     bot.send_message(message.chat.id, """Отлично, теперь выбери что ввести длительность или дистанцию?""", reply_markup=markup)
 """"""
-def processing_time(message):#если выбрал продолжительность
+def processing_time(message):#если выбрал продолжительность потом переход к описанию
     if message.text == "Назад":
         handle_button(message)
         return
@@ -474,7 +474,7 @@ def processing_time(message):#если выбрал продолжительно
     bot.send_message(message.chat.id, """хорошо, отличная продолжительность""")
     description(message)
 """"""
-def processing_distance(message):#если выбрал дистанцию
+def processing_distance(message):#если выбрал дистанцию потом переход к описанию
     if message.text == "Назад":
         handle_button(message)
         return
@@ -495,7 +495,7 @@ def description(message):#запрос описания
     markup.add(yes, no)
     bot.send_message(message.chat.id, """Почти готово, есть ли какие заметки к тренировке?""", reply_markup=markup)
 """"""
-def processing_yes(message):#если ответил да, то обработка описания
+def processing_yes(message):#если ответил да, то обработка описания и переход к сохранению
     if message.text == "Назад":
         handle_button(message)
         return
