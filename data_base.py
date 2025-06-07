@@ -344,7 +344,7 @@ class Database:
         all_goals = cursor.fetchall()
         goals = []
         for id, user_name, date_start, type_training, distance_training, date_finish in all_goals:
-            goal = (user_name, date_start, type_training, distance_training, date_finish,  id)
+            goal = Goal(user_name, date_start, type_training, distance_training, date_finish,  id)
             goals.append(goal) 
         if len(goals) == 0:
             return None
@@ -364,7 +364,7 @@ class Database:
         all_goals = cursor.fetchall()
         goals = []
         for id, user_name, date_start, type_training, distance_training, date_finish in all_goals:
-            goal = (user_name, date_start, type_training, distance_training, date_finish,  id)
+            goal = Goal(user_name, date_start, type_training, distance_training, date_finish,  id)
             goals.append(goal) 
         if len(goals) == 0:
             return None
@@ -399,7 +399,7 @@ class Database:
         all_reminders = cursor.fetchall()
         reminders = []
         for id, user_name, day_reminder, time_reminder in all_reminders:
-            reminder = (user_name, day_reminder, time_reminder,  id)
+            reminder = Reminder(user_name, day_reminder, time_reminder,  id)
             reminders.append(reminder) 
         if len(reminders) == 0:
             return None

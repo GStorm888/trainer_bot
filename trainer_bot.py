@@ -773,10 +773,25 @@ def view_goals(message):
     if message.text == "Назад":
         handle_button(message)
         return
+    today = datetime.datetime.today().date()
     telegram_user_id = str(message.chat.id)
     user = Database.search_user_by_telegram_id(telegram_user_id)
-    all_gpals = Database.get_all_goal_by_user_name(user.user_name)
-    bot.send_message(message.chat.id, f"""a: {all_gpals}""")
+    all_goals = Database.get_all_goal_by_user_name(user.user_name)
+    count = 0
+    bot.send_message(message.chat.id, f"""готово, все цели пользователя - {user.user_name}""")
+    for goal in all_goals:
+        left_days = datetime.datetime.strptime(goal.date_finish, "%Y-%m-%d") - datetime.datetime.strptime(str(today), "%Y-%m-%d")
+        count += 1
+        print_text = f"""
+{count}:
+дата установки цели - {goal.date_start};
+тип тренировки - {goal.type_training}
+дистанция цели - {goal.distance_training}
+осталась дистанция -{goal.distance_training - 1}
+дата окончания - {goal.date_finish}
+осталось дней - {left_days.days}
+"""
+        bot.send_message(message.chat.id, print_text)
 """
 """
 """
