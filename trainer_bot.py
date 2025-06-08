@@ -95,6 +95,7 @@ def callback_query_time_or_distance_add_workout(call):
                             call.data == "add_workout" or
                             call.data == "view_workouts" or
                             call.data == "set_goal" or
+                            call.data == "view_goals" or
                             call.data == "statistics" or
                             call.data == "reminder" or
                             call.data == "export_data" or
@@ -878,6 +879,12 @@ def view_goals(message):
     count = 0
     bot.send_message(message.chat.id, f"""готово, все цели пользователя - {user.user_name}""")
     for goal in all_goals:
+        left_distance = int(goal.distance_training)
+        workouts = Database.view_workouts_to_type_and_date(goal.type_training, goal.date_start, goal.date_finish, user.user_name)
+        if workouts is not None:
+            for workout in workouts:
+                    if workout.distance_training is not None:
+                        left_distance -= int(workout.distance_training)
         left_days = datetime.datetime.strptime(goal.date_finish, "%Y-%m-%d") - datetime.datetime.strptime(str(today), "%Y-%m-%d")
         count += 1
         print_text = f"""
@@ -885,7 +892,7 @@ def view_goals(message):
 дата установки цели - {goal.date_start};
 тип тренировки - {goal.type_training}
 дистанция цели - {goal.distance_training}
-осталась дистанция -{goal.distance_training - 1}
+осталась дистанция -{left_distance}
 дата окончания - {goal.date_finish}
 осталось дней - {left_days.days}
 """
@@ -1148,42 +1155,28 @@ def export_data(message):
     user = Database.search_user_by_telegram_id(telegram_user_id)
     user_name = user.user_name
     trainings = Database.get_all_training_by_user_name(user_name)
-
-    trainings_lst_lib = []
+    trainings_lst = []
     for workout in trainings:
-        trainings_lib = {"type_trainig": workout.type_training,
-        "date_training": workout.date_training, 
-        "call_training": workout.call_training,
-        "time_training": workout.time_training, 
-        "distance_training": workout.distance_training, 
-        "description_training": workout.description_training, 
+        trainings_lib = {"Тип тренировки": workout.type_training,
+        "Дата тренировки": workout.date_training, 
+        "Каллории": workout.call_training,
+        "Продолжительность": workout.time_training, 
+        "Дистанция": workout.distance_training, 
+        "Заметка": workout.description_training, 
         }  
-        trainings_lst_lib.append(trainings_lib)
-
-    # if workout.time_training is not None:
-    #     trainings_lib["time_training"] = workout.time_training
-    # if workout.distance_training is not None:
-    #     trainings_lib["distance_training"] = workout.distance_training
-    # if workout.time_training is not None:
-    #     trainings_lib["description_training"] = workout.description_training
-
+        trainings_lst.append(trainings_lib)
     csv_filename = "training.csv"
-
-    fieldnames = ["type_trainig", "date_training", "call_training",
-    "time_training", "distance_training", "description_training"]
-
-    with open(csv_filename, 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerows(trainings_lst_lib)
+    with open(csv_filename, "w", newline="") as file:
+        fieldnames = ["Тип тренировки", "Дата тренировки", "Каллории",
+        "Продолжительность", "Дистанция", "Заметка"]
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(trainings_lst)
     send_scv_file(telegram_user_id, writer, csv_filename)
-
-
-
-
-def send_scv_file(user, file, csv_filename):
+""""""
+def send_scv_file(telegram_user_id, file, csv_filename):
     doc = open(csv_filename, 'rb')
-    bot.send_document(user, doc)
-    bot.send_document(user, "FILEID")
+    bot.send_document(telegram_user_id, doc)
 """
 """
 """
