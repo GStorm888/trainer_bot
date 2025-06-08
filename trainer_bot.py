@@ -7,6 +7,7 @@ from telebot import types, TeleBot # импорт библиотек
 import sqlite3
 import hashlib
 import datetime
+import csv
 from config import TOKEN#импорт файлов проекта
 from data_base import Database
 from user import User, Training, Goal, Reminder
@@ -40,9 +41,9 @@ def test(message):
 """
 """
 """
-"""     
-@bot.callback_query_handler(func=lambda call: True)#для обработки кнопок
-def callback_query(call):
+""" 
+@bot.callback_query_handler(func=lambda call: call.data == "Yes" or call.data == "No")#для обработки кнопок add_workout
+def callback_query_description(call):
     message = call.message
     if call.data == "Yes":#заметки /add_workout
         bot.delete_message(message.chat.id, message.message_id)
@@ -54,7 +55,14 @@ def callback_query(call):
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, """Хорошо, не буду записывать в твою тренировку""")
         save_training(message)
-    elif call.data == "register":#переход к регистрации
+"""
+"""
+"""
+""" 
+@bot.callback_query_handler(func=lambda call: call.data == "register" or call.data == "login")#для обработки кнопок register и login
+def callback_query_register_and_login(call):
+    message = call.message
+    if call.data == "register":#переход к регистрации
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, """Отличное решение""")
         register(message)
@@ -62,15 +70,40 @@ def callback_query(call):
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, """Отличное решение""")
         login(message)
-    elif call.data == "time":#выбор /add_workout
+"""
+"""
+"""
+""" 
+@bot.callback_query_handler(func=lambda call: call.data == "time" or call.data == "distance")#для обработки кнопок add_workout
+def callback_query_time_or_distance_add_workout(call):
+    message = call.message
+    if call.data == "time":#выбор /add_workout
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, """Хорошо, введи время тренировки в минутах""")
         bot.register_next_step_handler(message, processing_time)
     elif call.data == "distance":#выбор /add_workout
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, """Хорошо, введи дистанцию в метрах""")
-        bot.register_next_step_handler(message, processing_distance)   
-    elif call.data == "help":#функция help
+        bot.register_next_step_handler(message, processing_distance) 
+"""
+"""
+"""
+""" 
+# для обработки кнопок в меню help
+@bot.callback_query_handler(func=lambda call: call.data == "help" or
+                            call.data == "start" or
+                            call.data == "add_workout" or
+                            call.data == "view_workouts" or
+                            call.data == "set_goal" or
+                            call.data == "statistics" or
+                            call.data == "reminder" or
+                            call.data == "export_data" or
+                            call.data == "logout" or
+                            call.data == "delete_account"
+                            )
+def callback_query_menu_help(call):
+    message = call.message   
+    if call.data == "help":#функция help
         bot.delete_message(message.chat.id, message.message_id)
         help(message)      
     elif call.data == "start":#функция help
@@ -103,7 +136,19 @@ def callback_query(call):
     elif call.data == "delete_account":#функция help
         bot.delete_message(message.chat.id, message.message_id)
         delete_account(message)  
-    elif call.data == "type_training":# ип view_workouts
+"""
+"""
+"""
+""" 
+#для обработки кнопок view_workouts
+@bot.callback_query_handler(func=lambda call: call.data == "type_training" or 
+                            call.data == "date_training" or
+                            call.data == "type_and_date_training" or
+                            call.data == "all_training"
+                            )
+def callback_query_view_workouts(call):
+    message = call.message   
+    if call.data == "type_training":# тип view_workouts
         bot.delete_message(message.chat.id, message.message_id)
         view_workouts_to_type(message)  
     elif call.data == "date_training":#период view_workouts
@@ -115,7 +160,19 @@ def callback_query(call):
     elif call.data == "all_training":#все view_workouts
         bot.delete_message(message.chat.id, message.message_id)
         view_workouts_to_all(message)   
-    elif call.data == "del_yes":#удаление аккаунта дальше процесс
+"""
+"""
+"""
+""" 
+#для обработки кнопок удаления аккаунта
+@bot.callback_query_handler(func=lambda call: call.data == "del_yes" or
+                            call.data == "del_no" or
+                            call.data == "del_yes_2" or
+                            call.data == "del_no_2"
+                            )
+def callback_query_del_profile(call):
+    message = call.message     
+    if call.data == "del_yes":#удаление аккаунта дальше процесс
         bot.delete_message(message.chat.id, message.message_id)
         processing_del_yes(message)   
     elif call.data == "del_no":#удаление аккаунта стоп и переход в help
@@ -129,7 +186,24 @@ def callback_query(call):
     elif call.data == "del_no_2": #удаление аккаунта конец
         bot.delete_message(message.chat.id, message.message_id)
         processing_del_no_2(message)
-    elif call.data == "monday": #напоминание на пн
+"""
+"""
+"""
+""" 
+#для обработки кнопок добавления непоминания(дни недели и переход дальше)
+@bot.callback_query_handler(func=lambda call: call.data == "monday" or
+                            call.data == "tuesday" or
+                            call.data == "wednesday" or
+                            call.data == "thursday" or
+                            call.data == "friday" or
+                            call.data == "saturday" or
+                            call.data == "sunday" or
+                            call.data == "finish_reminder"
+                            )
+def callback_query_reminder_days_and_next_step(call):
+    message = call.message     
+
+    if call.data == "monday": #напоминание на пн
         bot.send_message(message.chat.id, """Хорошо, в Понедельник, в какие еще дни?""")
         processing_day(0)
     elif call.data == "tuesday": #напоминание на вт
@@ -154,7 +228,19 @@ def callback_query(call):
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, """Хорошо, в какое время?""")
         bot.register_next_step_handler(message, processing_time_reminder)
-    elif call.data == "del_reminder": #удаление всех напоминаний
+"""
+"""
+"""
+""" 
+#для обработки кнопок удаления и создания напоминания
+@bot.callback_query_handler(func=lambda call: call.data == "del_reminder" or
+                            call.data == "add_reminder" or
+                            call.data == "del_reminder_yes" or
+                            call.data == "del_reminder_no"
+                            )
+def callback_query_del_and_add_reminder(call):
+    message = call.message     
+    if call.data == "del_reminder": #удаление всех напоминаний
         bot.delete_message(message.chat.id, message.message_id)
         del_reminder(message)
     elif call.data == "add_reminder": #добаление напоминаний
@@ -167,7 +253,19 @@ def callback_query(call):
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, "правильно, не нужно этого делать")
         help(message)
-    elif call.data == "type_statistics": #просмотр статистики по типу
+"""
+"""
+"""
+""" 
+#для обработки кнопок statistics
+@bot.callback_query_handler(func=lambda call: call.data == "type_statistics" or
+                            call.data == "period_statistics" or
+                            call.data == "type_and_period_statistics" or
+                            call.data == "all_statistics"
+                            )
+def callback_query_statistics(call):
+    message = call.message     
+    if call.data == "type_statistics": #просмотр статистики по типу
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, "хорошо, какой тип тренировок?")
         bot.register_next_step_handler(message, type_statistics)
@@ -1040,6 +1138,52 @@ def processing_del_reminder_yes(message):
     user_name = user.user_name
     Database.delete_reminder(user_name)
     bot.send_message(message.chat.id, """все ваши напоминания удалены""")
+"""
+"""
+"""
+""" 
+@bot.message_handler(commands=['export_data'])  #функция export_data для возвращения файла csv с данными
+def export_data(message):
+    telegram_user_id = str(message.chat.id)
+    user = Database.search_user_by_telegram_id(telegram_user_id)
+    user_name = user.user_name
+    trainings = Database.get_all_training_by_user_name(user_name)
+
+    trainings_lst_lib = []
+    for workout in trainings:
+        trainings_lib = {"type_trainig": workout.type_training,
+        "date_training": workout.date_training, 
+        "call_training": workout.call_training,
+        "time_training": workout.time_training, 
+        "distance_training": workout.distance_training, 
+        "description_training": workout.description_training, 
+        }  
+        trainings_lst_lib.append(trainings_lib)
+
+    # if workout.time_training is not None:
+    #     trainings_lib["time_training"] = workout.time_training
+    # if workout.distance_training is not None:
+    #     trainings_lib["distance_training"] = workout.distance_training
+    # if workout.time_training is not None:
+    #     trainings_lib["description_training"] = workout.description_training
+
+    csv_filename = "training.csv"
+
+    fieldnames = ["type_trainig", "date_training", "call_training",
+    "time_training", "distance_training", "description_training"]
+
+    with open(csv_filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(trainings_lst_lib)
+    send_scv_file(telegram_user_id, writer, csv_filename)
+
+
+
+
+def send_scv_file(user, file, csv_filename):
+    doc = open(csv_filename, 'rb')
+    bot.send_document(user, doc)
+    bot.send_document(user, "FILEID")
 """
 """
 """
