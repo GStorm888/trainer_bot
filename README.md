@@ -41,7 +41,7 @@
 
 3. Укажите ваш Telegram Bot Token в `.env` файле или напрямую в коде:
    ```env
-   TELEGRAM_TOKEN=your_telegram_bot_token
+   TOKEN=your_telegram_bot_token
    ```
 
 4. Запустите бота:
