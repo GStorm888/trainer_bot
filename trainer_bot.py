@@ -296,25 +296,26 @@ def handle_button(message):
 @bot.message_handler(commands=['start'])  #функция start для начала работы бота
 def start(message):
     telegram_user_id = str(message.chat.id)
-
-    if Database.get_all_users() is None:#если БД пользователей пуста
-        markup = types.InlineKeyboardMarkup()
-        register_bttn = types.InlineKeyboardButton(text='register', callback_data='register' )
-        markup.add(register_bttn)
-        bot.send_message(message.chat.id, """вы не зарегистрированы, чтобы продолжить использовать бота зарегистрируйтесь""", reply_markup=markup)
-        return
-    elif Database.examination_status_log_in(0, telegram_user_id) is not None:#если пользователь не активен
-        markup = types.InlineKeyboardMarkup()
-        login_bttn = types.InlineKeyboardButton(text='login', callback_data='login' )
-        markup.add(login_bttn)
-        bot.send_message(message.chat.id, """вы не в аккаунте, чтобы продолжить использовать бота войдите в него""", reply_markup=markup)
-        return
-    elif Database.search_user_by_telegram_id(telegram_user_id) is None:#если пользователь не найден
-        markup = types.InlineKeyboardMarkup()
-        register_bttn = types.InlineKeyboardButton(text='register', callback_data='register' )
-        markup.add(register_bttn)
-        bot.send_message(message.chat.id, """вы не зарегистрированы, чтобы продолжить использовать бота зарегистрируйтесь""", reply_markup=markup)
-        return
+    if not examination_register_and_login_and_status_log_in():
+        return None
+    # if Database.get_all_users() is None:#если БД пользователей пуста
+    #     markup = types.InlineKeyboardMarkup()
+    #     register_bttn = types.InlineKeyboardButton(text='Регистрация', callback_data='register' )
+    #     markup.add(register_bttn)
+    #     bot.send_message(message.chat.id, """вы не зарегистрированы, чтобы продолжить использовать бота зарегистрируйтесь""", reply_markup=markup)
+    #     return
+    # elif Database.examination_status_log_in(0, telegram_user_id) is not None:#если пользователь не активен
+    #     markup = types.InlineKeyboardMarkup()
+    #     login_bttn = types.InlineKeyboardButton(text='Авторизация', callback_data='login' )
+    #     markup.add(login_bttn)
+    #     bot.send_message(message.chat.id, """вы не в аккаунте, чтобы продолжить использовать бота войдите в него""", reply_markup=markup)
+    #     return
+    # elif Database.search_user_by_telegram_id(telegram_user_id) is None:#если пользователь не найден
+    #     markup = types.InlineKeyboardMarkup()
+    #     register_bttn = types.InlineKeyboardButton(text='Регистрация', callback_data='register' )
+    #     markup.add(register_bttn)
+    #     bot.send_message(message.chat.id, """вы не зарегистрированы, чтобы продолжить использовать бота зарегистрируйтесь""", reply_markup=markup)
+    #     return
 
     markup = types.InlineKeyboardMarkup()#если все хорошо
     help_bttn = types.InlineKeyboardButton(text='help', callback_data='help')
@@ -341,22 +342,22 @@ def help(message):
     help_bttn = types.InlineKeyboardButton(text='help', callback_data='help')
     start_bttn = types.InlineKeyboardButton(text='start', callback_data='start')
 
-    register_bttn = types.InlineKeyboardButton(text='register', callback_data='register')
-    login_bttn = types.InlineKeyboardButton(text='login', callback_data='login')
+    register_bttn = types.InlineKeyboardButton(text='Регистрация', callback_data='register')
+    login_bttn = types.InlineKeyboardButton(text='Авторизация', callback_data='login')
 
-    add_workout_bttn = types.InlineKeyboardButton(text='add_workout', callback_data='add_workout')
-    view_workout_bttn = types.InlineKeyboardButton(text='view_workouts', callback_data='view_workouts')
+    add_workout_bttn = types.InlineKeyboardButton(text='Добавить тренировку', callback_data='add_workout')
+    view_workout_bttn = types.InlineKeyboardButton(text='Посмотреть тренировки', callback_data='view_workouts')
 
-    set_goal_bttn = types.InlineKeyboardButton(text='set_goal', callback_data='set_goal')
-    view_goals_bttn = types.InlineKeyboardButton(text='view_goals', callback_data='view_goals')
+    set_goal_bttn = types.InlineKeyboardButton(text='Установить/удалить цели', callback_data='set_goal')
+    view_goals_bttn = types.InlineKeyboardButton(text='Посмотреть цели', callback_data='view_goals')
 
-    statistics_bttn = types.InlineKeyboardButton(text='statistics', callback_data='statistics')
-    reminder_bttn = types.InlineKeyboardButton(text='reminder', callback_data='reminder')
+    statistics_bttn = types.InlineKeyboardButton(text='Статистика', callback_data='statistics')
+    reminder_bttn = types.InlineKeyboardButton(text='Напоминания', callback_data='reminder')
  
-    export_data_bttn = types.InlineKeyboardButton(text='export_data', callback_data='export_data')
-    logout_bttn = types.InlineKeyboardButton(text='logout', callback_data='logout')
+    export_data_bttn = types.InlineKeyboardButton(text='Экспорт данных', callback_data='export_data')
+    logout_bttn = types.InlineKeyboardButton(text='Выйти', callback_data='logout')
 
-    delete_account_bttn = types.InlineKeyboardButton(text='delete_account', callback_data='delete_account')
+    delete_account_bttn = types.InlineKeyboardButton(text='Удалить аккаунт', callback_data='delete_account')
 
     markup.add(help_bttn, start_bttn)
     markup.add(register_bttn, login_bttn)
@@ -368,19 +369,19 @@ def help(message):
 
     bot.send_message(message.chat.id,
 """📌 Команды для тренера:
-/help — Справка по командам
-/start — Запуск бота
-/register — Регистрация нового пользователя
-/login — Вход в аккаунт
-/add_workout — Добавить тренировку
-/view_workouts — Посмотреть тренировки
-/set_goal — Установить цель
-/view_goals — Проверить цели и прогресс
-/statistics — Показать статистику
-/reminder — Управление напоминаниями
-/export_data — Экспорт тренировок в файл
-/logout — Выход из аккаунта
-/delete_account — Удаление аккаунта
+help — Справка по командам
+start — Запуск бота
+Регистрация — Регистрация нового пользователя
+Авторизация — Вход в аккаунт
+Добавить тренировку — Добавить тренировку
+Посмотреть тренировки — Посмотреть тренировки
+Установить/удалить цели — Установить цель
+Посмотреть цели — Проверить цели и прогресс
+Статистика — Показать статистику
+Напоминания — Управление напоминаниями
+Экспорт данных — Экспорт тренировок в файл
+Выйти — Выход из аккаунта
+Удалить аккаунт — Удаление аккаунта
                     """,  reply_markup=markup)
 """
 """
@@ -501,7 +502,7 @@ def logout_finish(message):#функция для кнопки логин пос
         handle_button(message)
         return
     markup = types.InlineKeyboardMarkup()
-    login = types.InlineKeyboardButton(text='login', callback_data='login' )
+    login = types.InlineKeyboardButton(text='Авторизация', callback_data='login' )
     markup.add(login)
     bot.send_message(message.chat.id, "когда захотите вернуться нажмите на кнопку", reply_markup=markup)
 """
@@ -914,8 +915,8 @@ def reminder(message):
     
     if Database.get_all_reminder_by_user_name(user_name) is not None:
         markup = types.InlineKeyboardMarkup()
-        add_reminder_bttn = types.InlineKeyboardButton(text='add_reminder', callback_data='add_reminder')
-        del_reminder_bttn = types.InlineKeyboardButton(text='del_reminder', callback_data='del_reminder')
+        add_reminder_bttn = types.InlineKeyboardButton(text='Добавить напоминание', callback_data='add_reminder')
+        del_reminder_bttn = types.InlineKeyboardButton(text='Удалить напоминание', callback_data='del_reminder')
         markup.add(add_reminder_bttn, del_reminder_bttn)
         bot.send_message(message.chat.id, "ты хочешь удалить или добавить напоминания?", reply_markup=markup)
     else: 
@@ -929,17 +930,17 @@ def add_reminder(message):
     days_lst = []
     markup = types.InlineKeyboardMarkup()
     
-    monday = types.InlineKeyboardButton(text='monday', callback_data='monday')
-    tuesday = types.InlineKeyboardButton(text='tuesday', callback_data='tuesday')
+    monday = types.InlineKeyboardButton(text='Понедельник', callback_data='monday')
+    tuesday = types.InlineKeyboardButton(text='Вторник', callback_data='tuesday')
 
-    wednesday = types.InlineKeyboardButton(text='wednesday', callback_data='wednesday')
-    thursday = types.InlineKeyboardButton(text='thursday', callback_data='thursday')
+    wednesday = types.InlineKeyboardButton(text='Среда', callback_data='wednesday')
+    thursday = types.InlineKeyboardButton(text='Четверг', callback_data='thursday')
 
-    friday = types.InlineKeyboardButton(text='friday', callback_data='friday')
-    saturday = types.InlineKeyboardButton(text='saturday', callback_data='saturday')
+    friday = types.InlineKeyboardButton(text='Пятница', callback_data='friday')
+    saturday = types.InlineKeyboardButton(text='Суббота', callback_data='saturday')
 
-    sunday = types.InlineKeyboardButton(text='sunday', callback_data='sunday')
-    finish_reminder = types.InlineKeyboardButton(text='это все', callback_data='finish_reminder')
+    sunday = types.InlineKeyboardButton(text='Воскресенье', callback_data='sunday')
+    finish_reminder = types.InlineKeyboardButton(text='Это все', callback_data='finish_reminder')
 
     markup.add(monday, tuesday)
     markup.add(wednesday, thursday)
@@ -1081,13 +1082,13 @@ def processing_del_finish(message):#дополнительное сообщен�
         handle_button(message)
         return
     markup = types.InlineKeyboardMarkup()
-    register = types.InlineKeyboardButton(text='register', callback_data='register' )
+    register = types.InlineKeyboardButton(text='Регистрация', callback_data='register' )
     markup.add(register)
     bot.send_message(message.chat.id, """если захотите вернуться, просто нажмите на кнопку""", reply_markup=markup)
 """
 """
 """
 """
-# reminder_thread = threading.Thread(target=check_reminder_every_minutes, daemon=True)
-# reminder_thread.start()
+reminder_thread = threading.Thread(target=check_reminder_every_minutes, daemon=True)
+reminder_thread.start()
 bot.infinity_polling()
