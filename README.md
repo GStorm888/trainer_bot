@@ -39,14 +39,14 @@
    pip install -r requirements.txt
    ```
 
-3. Укажите ваш Telegram Bot Token в `.env` файле или напрямую в коде:
+3. Укажите ваш Telegram Bot Token в `.config` файле или напрямую в коде:
    ```env
    TOKEN=your_telegram_bot_token
    ```
 
 4. Запустите бота:
    ```bash
-   python main.py
+   python trainer_bot.py
    ```
 
 ---
