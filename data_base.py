@@ -21,6 +21,7 @@ class Database:
         cursor.execute("""DROP TABLE users""")
         cursor.execute("""DROP TABLE trainings""")
         cursor.execute("""DROP TABLE goals""")
+        cursor.execute("""DROP TABLE reminder""")
         connection.commit()
         return True
     """
