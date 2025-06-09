@@ -298,25 +298,6 @@ def start(message):
     telegram_user_id = str(message.chat.id)
     if not examination_register_and_login_and_status_log_in():
         return None
-    # if Database.get_all_users() is None:#если БД пользователей пуста
-    #     markup = types.InlineKeyboardMarkup()
-    #     register_bttn = types.InlineKeyboardButton(text='Регистрация', callback_data='register' )
-    #     markup.add(register_bttn)
-    #     bot.send_message(message.chat.id, """вы не зарегистрированы, чтобы продолжить использовать бота зарегистрируйтесь""", reply_markup=markup)
-    #     return
-    # elif Database.examination_status_log_in(0, telegram_user_id) is not None:#если пользователь не активен
-    #     markup = types.InlineKeyboardMarkup()
-    #     login_bttn = types.InlineKeyboardButton(text='Авторизация', callback_data='login' )
-    #     markup.add(login_bttn)
-    #     bot.send_message(message.chat.id, """вы не в аккаунте, чтобы продолжить использовать бота войдите в него""", reply_markup=markup)
-    #     return
-    # elif Database.search_user_by_telegram_id(telegram_user_id) is None:#если пользователь не найден
-    #     markup = types.InlineKeyboardMarkup()
-    #     register_bttn = types.InlineKeyboardButton(text='Регистрация', callback_data='register' )
-    #     markup.add(register_bttn)
-    #     bot.send_message(message.chat.id, """вы не зарегистрированы, чтобы продолжить использовать бота зарегистрируйтесь""", reply_markup=markup)
-    #     return
-
     markup = types.InlineKeyboardMarkup()#если все хорошо
     help_bttn = types.InlineKeyboardButton(text='help', callback_data='help')
     markup.add(help_bttn)
