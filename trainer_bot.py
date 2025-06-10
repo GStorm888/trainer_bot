@@ -11,6 +11,9 @@ import datetime
 import csv
 import threading
 import time
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('agg')
 from config import TOKEN#импорт файлов проекта
 from data_base import Database
 from user import User, Training, Goal, Reminder
@@ -49,17 +52,17 @@ def examination_register_and_login_and_status_log_in(message):
     telegram_user_id = str(message.chat.id)
     if Database.get_all_users() is None:
         bot.send_message(message.chat.id, "Увы, но вы не зарегистрированы")
-        time.sleep(1)
+        # time.sleep(1)
         register(message)
         return False
     elif Database.search_user_by_telegram_id(telegram_user_id) is None:
         bot.send_message(message.chat.id, "Увы, но вы не зарегистрированы")
         register(message)
-        time.sleep(1)
+        # time.sleep(1)
         return False
     elif Database.examination_status_log_in(0, telegram_user_id) is not None:
         bot.send_message(message.chat.id, "Увы, но вы не в аккаунте")
-        time.sleep(1)
+        # time.sleep(1)
         login(message)
         return False
     else:
@@ -296,7 +299,7 @@ def handle_button(message):
 @bot.message_handler(commands=['start'])  #функция start для начала работы бота
 def start(message):
     telegram_user_id = str(message.chat.id)
-    if not examination_register_and_login_and_status_log_in():
+    if not examination_register_and_login_and_status_log_in(message):
         return None
     markup = types.InlineKeyboardMarkup()#если все хорошо
     help_bttn = types.InlineKeyboardButton(text='help', callback_data='help')
@@ -371,9 +374,6 @@ start — Запуск бота
 #функция register для регистрации нового пользователя
 @bot.message_handler(commands=['register']) #начало и ввод имени
 def register(message):
-    if message.text == "Назад":
-        handle_button(message)
-        return
     telegram_user_id = str(message.chat.id)
     if Database.search_user_by_telegram_id(telegram_user_id):
         bot.send_message(message.chat.id, f"Увы, но вы уже зарегистрированы, попробуйте ввести ваше имя и войти в аккаунт")
@@ -877,7 +877,35 @@ def statistics(message):
     telegram_user_id = str(message.chat.id)
     user = Database.search_user_by_telegram_id(telegram_user_id)
     all_trainings = Database.get_all_training_by_user_name(user.user_name)
-    bot.send_message(message.chat.id, f"""a: {all_trainings}""")
+    if all_trainings is None:
+        bot.send_message(message.chat.id, "У вас еще нет тренировок")
+        return None
+
+    month_counts_dic = {}
+    for training in all_trainings:
+        date = training.date_training
+        date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+        month = date.strftime("%Y-%m")
+        if month in month_counts_dic:
+            month_counts_dic[month] += 1
+        else:
+            month_counts_dic[month] = 1
+
+    # Построение графика
+    months = sorted(month_counts_dic)
+    counts = [month_counts_dic[m] for m in months]
+
+    # plt.figure(figsize=(10, 5))
+    plt.bar(months, counts, color='pink')
+    plt.xlabel("Месяц")
+    plt.ylabel("Количество тренировок")
+    plt.title("Тренировки по месяцам")
+    plt.savefig("stistic.png")
+    plt.close()
+    with open("stistic.png", "rb") as photo:
+        bot.send_photo(message.chat.id, photo)
+
+
 """
 """
 """
@@ -955,14 +983,15 @@ def check_reminder_every_minutes():
         today = now.weekday() 
         time_now = now.strftime("%H:%M")
         all_reminders = Database.get_all_reminder()
-        for reminder in all_reminders:
-            if int(reminder.day_reminder) == today and reminder.time_reminder == time_now:
-                print("if1")
-                user = Database.return_user_by_name(reminder.user_name)
-                if user.status_log_in == 1:
-                    bot.send_message(user.telegram_user_id, "Я не забываю отправлять вам напоминания")
-                else:
-                    return None
+        if all_reminders is not None:
+            for reminder in all_reminders:
+                if int(reminder.day_reminder) == today and reminder.time_reminder == time_now:
+                    print("if1")
+                    user = Database.return_user_by_name(reminder.user_name)
+                    if user.status_log_in == 1:
+                        bot.send_message(user.telegram_user_id, "Я не забываю отправлять вам напоминания")
+                    else:
+                        return None
         time.sleep(60)
 """"""
 """"""
