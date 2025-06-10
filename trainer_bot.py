@@ -48,6 +48,32 @@ def test(message):
 """
 """
 """ 
+def examination_date_type(user_time):
+    time_format = "%H:%M"
+    try:
+        datetime.datetime.strptime(user_time, time_format)
+        return True
+    except:
+        return False
+    
+        
+    # if isinstance(user_time, datetime.time):
+    #     return True
+    # return False
+
+def examination_str_type(text_str):
+    if isinstance(text_str, str):
+        return True
+    return False
+
+def examination_int_type(text_int):
+    if text_int.isdigit():
+        return True
+    return False
+"""
+"""
+"""
+""" 
 def examination_register_and_login_and_status_log_in(message):
     telegram_user_id = str(message.chat.id)
     if Database.get_all_users() is None:
@@ -82,7 +108,6 @@ def callback_query_description(call):
         global description_training
         description_training = None
         bot.delete_message(message.chat.id, message.message_id)
-        bot.send_message(message.chat.id, """Хорошо, не буду записывать в твою тренировку""")
         save_training(message)
 """
 """
@@ -332,7 +357,7 @@ def help(message):
     add_workout_bttn = types.InlineKeyboardButton(text='Добавить тренировку', callback_data='add_workout')
     view_workout_bttn = types.InlineKeyboardButton(text='Посмотреть тренировки', callback_data='view_workouts')
 
-    set_goal_bttn = types.InlineKeyboardButton(text='Установить/удалить цели', callback_data='set_goal')
+    set_goal_bttn = types.InlineKeyboardButton(text='Установить цель', callback_data='set_goal')
     view_goals_bttn = types.InlineKeyboardButton(text='Посмотреть цели', callback_data='view_goals')
 
     statistics_bttn = types.InlineKeyboardButton(text='Статистика', callback_data='statistics')
@@ -515,6 +540,10 @@ def call_training_register_call(message):#обработка каллорий и
         return
     global call_training
     call_training = message.text
+    if not examination_int_type(call_training):
+        bot.send_message(message.chat.id, """ты должен ввести только целое число, попробуй еще раз""")
+        bot.register_next_step_handler(message, call_training_register_call)
+        return None
     markup = types.InlineKeyboardMarkup()
     time = types.InlineKeyboardButton(text="Продолжительность(мин)", callback_data="time")
     distance = types.InlineKeyboardButton(text="Дистанция(км)", callback_data="distance")
@@ -529,6 +558,11 @@ def processing_time(message):#если выбрал продолжительно
     time_training = message.text
     global distance_training
     distance_training = None
+    if not examination_int_type(time_training):
+        bot.send_message(message.chat.id, """ты должен ввести только целое число, попробуй еще раз""")
+        bot.register_next_step_handler(message, processing_time)
+        return None
+
     if not time_training.isdigit():
         bot.send_message(message.chat.id, """ты должен ввести только число, попробуй сейчас""")
         bot.register_next_step_handler(message.chat.id, processing_time)
@@ -543,6 +577,10 @@ def processing_distance(message):#если выбрал дистанцию по�
     distance_training = message.text
     global time_training
     time_training = None
+    if not examination_int_type(distance_training):
+        bot.send_message(message.chat.id, """ты должен ввести только целое число, попробуй еще раз""")
+        bot.register_next_step_handler(message, processing_distance)
+        return None
     bot.send_message(message.chat.id, """хорошо, отличная дистанция""")
     description(message)
 """"""
@@ -570,14 +608,51 @@ def save_training(message):#сохранение в БД
         handle_button(message)
         return
     telegram_user_id = str(message.chat.id)
-    user_name = Database.search_user_by_telegram_id(telegram_user_id).user_name
+    user = Database.search_user_by_telegram_id(telegram_user_id)
     date_training = datetime.datetime.today().date()
-    training = Training(str(user_name), type_training, date_training, call_training,
+    training = Training(user.user_name, type_training, date_training, call_training,
                         time_training, distance_training, description_training)
     Database.add_training(training)
     bot.send_message(message.chat.id, """Хорошо, я записал твою тренировку""")
+    check_goal_after_save_training(message, telegram_user_id, user, type_training)
+
 """"""
 """"""
+def check_goal_after_save_training(message, telegram_user_id, user:User, type_training):#проверка выполнения цели
+    all_goals = Database.get_all_goal_by_user_name_and_type(user.user_name, type_training)
+    today = datetime.datetime.today().date()
+    if all_goals is None:
+        return None
+    for goal in all_goals:
+        left_distance = int(goal.distance_training)
+        workouts = Database.view_workouts_to_type_and_date(type_training, goal.date_start, goal.date_finish, user.user_name)
+        if workouts is not None:
+            for workout in workouts:
+                if workout.distance_training is not None:
+                    left_distance -= int(workout.distance_training)
+        if left_distance <= 0:
+            left_days = datetime.datetime.strptime(goal.date_finish, "%Y-%m-%d") - datetime.datetime.strptime(str(today), "%Y-%m-%d")
+            bot.send_message(message.chat.id, f"""
+Поздравляю, ты выполнил свою цель:
+дата установки цели - {goal.date_start};
+тип тренировки - {goal.type_training}
+дистанция цели - {goal.distance_training}
+дата окончания - {goal.date_finish}
+осталось дней - {left_days.days}
+""")
+            Database.delete_goal_if_distance_done(goal)
+    return None
+
+""""""
+""""""
+#                     print_text = f"""
+# Поздравляю, ты выполнил свою цель:
+# дата установки цели - {goal.date_start};
+# тип тренировки - {goal.type_training}
+# дистанция цели - {goal.distance_training}
+# дата окончания - {goal.date_finish}
+# осталось дней - {left_days.days}
+# """
 """"""
 """"""
 @bot.message_handler(commands=['view_workouts'])#функция view_workouts для просмотра тренировок
@@ -625,6 +700,9 @@ def view_workouts_to_type_print(message):#вывод тренировок есл
     user = Database.search_user_by_telegram_id(telegram_user_id)
     user_name = user.user_name
     workouts_to_type = Database.view_workouts_to_type(type_training, user_name)
+    if workouts_to_type is None:
+        bot.send_message(message.chat.id, f"""я не нашел у вас тренировок с типом {type_training}""")
+        return None
     bot.send_message(message.chat.id, f"""готово, все тренировки пользователя- {workouts_to_type[0].user_name}, по типу {workouts_to_type[0].type_training}""")
     for workouts in workouts_to_type:
         count += 1
@@ -658,6 +736,10 @@ def view_workouts_to_date_register_date(message):#вывод из БДесли �
         return
     global period_training
     period_training = message.text
+    if not examination_int_type(period_training):
+        bot.send_message(message.chat.id, """ты должен ввести только целое число, попробуй еще раз""")
+        bot.register_next_step_handler(message, view_workouts_to_date_register_date)
+        return None
     view_workouts_to_date_print(message)
 """"""
 def view_workouts_to_date_print(message):# вывод тренировок если выбрал период
@@ -670,6 +752,9 @@ def view_workouts_to_date_print(message):# вывод тренировок ес�
     user = Database.search_user_by_telegram_id(telegram_user_id)
     user_name = user.user_name
     workouts_to_date = Database.view_workouts_to_date(date_start, today, user_name)
+    if workouts_to_date is None:
+        bot.send_message(message.chat.id, f"""я не нашел у вас тренировок за период {period_training} дней""")
+        return None
     count = 0
     bot.send_message(message.chat.id, f"""готово, все тренировки пользователя- {workouts_to_date[0].user_name}, с {date_start}""")
     for workouts in workouts_to_date:
@@ -713,6 +798,10 @@ def view_workouts_to_type_and_date_register_period(message):#обработка 
         return
     global period_training
     period_training = message.text
+    if not examination_int_type(period_training):
+        bot.send_message(message.chat.id, """ты должен ввести только целое число, попробуй еще раз""")
+        bot.register_next_step_handler(message, view_workouts_to_type_and_date_register_period)
+        return None
     view_workouts_to_type_and_date_print(message)
 """"""
 def view_workouts_to_type_and_date_print(message):#вывод тренировок если выбрал тип и период
@@ -725,7 +814,9 @@ def view_workouts_to_type_and_date_print(message):#вывод тренирово
     user = Database.search_user_by_telegram_id(telegram_user_id)
     user_name = user.user_name
     workouts_to_type_and_date = Database.view_workouts_to_type_and_date(type_training, date_start, today, user_name)
-
+    if workouts_to_type_and_date is None:
+        bot.send_message(message.chat.id, """я не нашел у вас тренировок с типом {type_training} за период {period_training}""")
+        return None
     count = 0
     bot.send_message(message.chat.id, f"""готово, все тренировки пользователя- {workouts_to_type_and_date[0].user_name}, по типу {workouts_to_type_and_date[0].type_training} с {date_start}""")
     for workouts in workouts_to_type_and_date:
@@ -754,13 +845,12 @@ def view_workouts_to_all(message):#просмотр всех тренирово�
     telegram_user_id = str(message.chat.id)
     user = Database.search_user_by_telegram_id(telegram_user_id)
     all_trainings = Database.get_all_training_by_user_name(user.user_name)
+    if all_trainings is None:
+        bot.send_message(message.chat.id, """я не нашел у вас тренировок""")
+        return None
     count = 0
-    print(all_trainings)
     bot.send_message(message.chat.id, f"""готово, все тренировки пользователя- {user.user_name}""")
     for workouts in all_trainings:
-        print(workouts)
-        print(workouts.user_name)
-
         count += 1
         print_text = f"""
 {count}:
@@ -806,6 +896,10 @@ def set_goal_register_distance(message):#обработка дистанции �
         return
     global distance_training
     distance_training = message.text
+    if not examination_int_type(distance_training):
+        bot.send_message(message.chat.id, """ты должен ввести только целое число, попробуй еще раз""")
+        bot.register_next_step_handler(message, set_goal_register_distance)
+        return None
     bot.send_message(message.chat.id, """Сколько дней на выполнение цели?""")
     bot.register_next_step_handler(message, set_goal_register_date_finish)
 """"""
@@ -815,6 +909,10 @@ def set_goal_register_date_finish(message):#обработка срока и п�
         return
     global period_training
     period_training = message.text
+    if not examination_int_type(period_training):
+        bot.send_message(message.chat.id, """ты должен ввести только целое число, попробуй еще раз""")
+        bot.register_next_step_handler(message, set_goal_register_date_finish)
+        return None
     bot.send_message(message.chat.id, """отлично, я записал""")
     set_goal_save(message)
 """"""
@@ -833,7 +931,7 @@ def set_goal_save(message):#сохранение данных в БД
 """
 """
 """
-@bot.message_handler(commands=['view_goals'])  #функция view_goals для  просмотра целей и их прогресса(не работает)
+@bot.message_handler(commands=['view_goals'])  #функция view_goals для  просмотра целей и их прогресса
 def view_goals(message):
     if message.text == "Назад":
         handle_button(message)
@@ -845,14 +943,17 @@ def view_goals(message):
     user = Database.search_user_by_telegram_id(telegram_user_id)
     all_goals = Database.get_all_goal_by_user_name(user.user_name)
     count = 0
+    if all_goals is None:
+        bot.send_message(message.chat.id, """я не нашел у вас целей""")
+        return None
     bot.send_message(message.chat.id, f"""готово, все цели пользователя - {user.user_name}""")
     for goal in all_goals:
         left_distance = int(goal.distance_training)
         workouts = Database.view_workouts_to_type_and_date(goal.type_training, goal.date_start, goal.date_finish, user.user_name)
         if workouts is not None:
             for workout in workouts:
-                    if workout.distance_training is not None:
-                        left_distance -= int(workout.distance_training)
+                if workout.distance_training is not None:
+                    left_distance -= int(workout.distance_training)
         left_days = datetime.datetime.strptime(goal.date_finish, "%Y-%m-%d") - datetime.datetime.strptime(str(today), "%Y-%m-%d")
         count += 1
         print_text = f"""
@@ -904,8 +1005,6 @@ def statistics(message):
     plt.close()
     with open("stistic.png", "rb") as photo:
         bot.send_photo(message.chat.id, photo)
-
-
 """
 """
 """
@@ -968,9 +1067,14 @@ def processing_time_reminder(message):
         return
     global time_reminder
     time_reminder = message.text
+    if not examination_date_type(time_reminder):
+        bot.send_message(message.chat.id, "Введи время в формате (часы:минуты), например(09:09)")
+        bot.register_next_step_handler(message, processing_time_reminder)
+        return None
     telegram_user_id = str(message.chat.id)
     user = Database.search_user_by_telegram_id(telegram_user_id)
     user_name = user.user_name
+    time_reminder = datetime.strptime(time_reminder, "%H:%M").time()
     for day_reminder in days_lst:
         reminder = Reminder(user_name, day_reminder, time_reminder)
         Database.set_reminder(reminder)
@@ -986,7 +1090,6 @@ def check_reminder_every_minutes():
         if all_reminders is not None:
             for reminder in all_reminders:
                 if int(reminder.day_reminder) == today and reminder.time_reminder == time_now:
-                    print("if1")
                     user = Database.return_user_by_name(reminder.user_name)
                     if user.status_log_in == 1:
                         bot.send_message(user.telegram_user_id, "Я не забываю отправлять вам напоминания")
@@ -1099,6 +1202,31 @@ def processing_del_finish(message):#дополнительное сообщен�
 """
 """
 """
+def check_goals_every_hour():
+    while True:
+        now = datetime.datetime.now()
+        today = now.strftime("%Y-%m-%d")
+        all_goals = Database.get_all_goal()
+        if all_goals is not None:
+            for goal in all_goals:
+                # print(goal.date_finish)
+
+                if goal.date_finish == today:
+                    user = Database.return_user_by_name(goal.user_name)
+                    if user.status_log_in == 1:
+                        bot.send_message(user.telegram_user_id, "Мне очень жаль, вы не выполнили свою цель")
+                        print_text = f"""
+дата установки цели - {goal.date_start};
+тип тренировки - {goal.type_training}
+дистанция цели - {goal.distance_training}
+дата окончания - {goal.date_finish}
+"""
+                        bot.send_message(user.telegram_user_id, print_text)
+                        Database.delete_goal_if_today_is_day_finish(goal.user_name, today)
+                    else:
+                        return None
+        time.sleep(3600)
 reminder_thread = threading.Thread(target=check_reminder_every_minutes, daemon=True)
+reminder_thread = threading.Thread(target=check_goals_every_hour, daemon=True)
 reminder_thread.start()
 bot.infinity_polling()

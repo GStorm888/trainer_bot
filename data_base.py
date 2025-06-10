@@ -39,7 +39,7 @@ class Database:
         all_trainings = cursor.fetchall()
         trainings = []
         for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training in all_trainings:
-            training = (user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
+            training = Training(user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
             trainings.append(training) 
         if len(trainings) == 0:
             return None
@@ -354,7 +354,7 @@ class Database:
     """
     """
     """
-    @staticmethod#промотр целей тренировок(для тестов)
+    @staticmethod#получение всех целей пользователя по имени
     def get_all_goal_by_user_name(user_name):
         connection = sqlite3.connect(Database.DATABASE)
 
@@ -372,6 +372,44 @@ class Database:
         return goals
     """ 
     """
+    """
+    """
+    @staticmethod#получение всех целей пользователя по имени
+    def get_all_goal_by_user_name_and_type(user_name, type_training):
+        connection = sqlite3.connect(Database.DATABASE)
+
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM goals WHERE user_name=? AND type_training=?", [user_name, type_training])
+
+        all_goals = cursor.fetchall()
+        goals = []
+        for id, user_name, date_start, type_training, distance_training, date_finish in all_goals:
+            goal = Goal(user_name, date_start, type_training, distance_training, date_finish,  id)
+            goals.append(goal) 
+        if len(goals) == 0:
+            return None
+        return goals
+    """ 
+    """
+    @staticmethod#Удаление цели если дистанция пройдена
+    def delete_goal_if_distance_done(goal:Goal):
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
+
+        cursor = connection.cursor()
+        cursor.execute("""DELETE FROM goals WHERE user_name=? AND date_start=?
+        AND type_training=? AND distance_training=? AND date_finish=?""",
+        [goal.user_name, goal.date_start, goal.type_training, goal.distance_training, goal.date_finish])
+        connection.commit()
+    """
+    """
+    @staticmethod#удаление цели
+    def delete_goal_if_today_is_day_finish(user_name, today):
+        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
+
+        cursor = connection.cursor()
+        cursor.execute("""DELETE FROM goals WHERE user_name=? AND date_finish=?""", [user_name, today])
+        connection.commit()
     """
     """
     @staticmethod #добавление напоминаний
