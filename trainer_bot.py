@@ -55,16 +55,6 @@ def examination_date_type(user_time):
         return True
     except:
         return False
-    
-        
-    # if isinstance(user_time, datetime.time):
-    #     return True
-    # return False
-
-def examination_str_type(text_str):
-    if isinstance(text_str, str):
-        return True
-    return False
 
 def examination_int_type(text_int):
     if text_int.isdigit():
@@ -327,7 +317,7 @@ def start(message):
     if not examination_register_and_login_and_status_log_in(message):
         return None
     markup = types.InlineKeyboardMarkup()#если все хорошо
-    help_bttn = types.InlineKeyboardButton(text='help', callback_data='help')
+    help_bttn = types.InlineKeyboardButton(text='🆘help', callback_data='help')
     markup.add(help_bttn)
     bot.send_message(message.chat.id, """Привет, я твой личный тренер Денис. 
 Нажми /help чтобы ознакомиться с командами""", reply_markup=markup)
@@ -335,7 +325,7 @@ def start(message):
 """"""
 def start_help_back_button(message):#появление кнопки 'Назад'
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    back = types.KeyboardButton("Назад") 
+    back = types.KeyboardButton("🔙Назад") 
     markup.add(back)
     bot.send_message(message.chat.id, "чтобы откуда угодно попасть в Help, просто нажми на кнопку 'Назад', или напиши слово 'Назад'",  reply_markup=markup)
 """
@@ -348,25 +338,25 @@ def help(message):
         return None
     markup = types.InlineKeyboardMarkup()
     
-    help_bttn = types.InlineKeyboardButton(text='help', callback_data='help')
-    start_bttn = types.InlineKeyboardButton(text='start', callback_data='start')
+    help_bttn = types.InlineKeyboardButton(text='🆘help', callback_data='help')
+    start_bttn = types.InlineKeyboardButton(text='🚀start', callback_data='start')
 
-    register_bttn = types.InlineKeyboardButton(text='Регистрация', callback_data='register')
-    login_bttn = types.InlineKeyboardButton(text='Авторизация', callback_data='login')
+    register_bttn = types.InlineKeyboardButton(text='🔐Регистрация', callback_data='register')
+    login_bttn = types.InlineKeyboardButton(text='🆔Авторизация', callback_data='login')
 
-    add_workout_bttn = types.InlineKeyboardButton(text='Добавить тренировку', callback_data='add_workout')
-    view_workout_bttn = types.InlineKeyboardButton(text='Посмотреть тренировки', callback_data='view_workouts')
+    add_workout_bttn = types.InlineKeyboardButton(text='➕💪Добавить тренировку', callback_data='add_workout')
+    view_workout_bttn = types.InlineKeyboardButton(text='📋💪Посмотреть тренировки', callback_data='view_workouts')
 
-    set_goal_bttn = types.InlineKeyboardButton(text='Установить цель', callback_data='set_goal')
-    view_goals_bttn = types.InlineKeyboardButton(text='Посмотреть цели', callback_data='view_goals')
+    set_goal_bttn = types.InlineKeyboardButton(text='🎯Установить цель', callback_data='set_goal')
+    view_goals_bttn = types.InlineKeyboardButton(text='📋🎯Посмотреть цели', callback_data='view_goals')
 
-    statistics_bttn = types.InlineKeyboardButton(text='Статистика', callback_data='statistics')
-    reminder_bttn = types.InlineKeyboardButton(text='Напоминания', callback_data='reminder')
+    statistics_bttn = types.InlineKeyboardButton(text='📊Статистика', callback_data='statistics')
+    reminder_bttn = types.InlineKeyboardButton(text='📅Напоминания', callback_data='reminder')
  
-    export_data_bttn = types.InlineKeyboardButton(text='Экспорт данных', callback_data='export_data')
-    logout_bttn = types.InlineKeyboardButton(text='Выйти', callback_data='logout')
+    export_data_bttn = types.InlineKeyboardButton(text='📤Экспорт данных', callback_data='export_data')
+    logout_bttn = types.InlineKeyboardButton(text='🔚Выйти', callback_data='logout')
 
-    delete_account_bttn = types.InlineKeyboardButton(text='Удалить аккаунт', callback_data='delete_account')
+    delete_account_bttn = types.InlineKeyboardButton(text='🗑Удалить аккаунт', callback_data='delete_account')
 
     markup.add(help_bttn, start_bttn)
     markup.add(register_bttn, login_bttn)
@@ -507,7 +497,7 @@ def logout_finish(message):#функция для кнопки логин пос
         handle_button(message)
         return
     markup = types.InlineKeyboardMarkup()
-    login = types.InlineKeyboardButton(text='Авторизация', callback_data='login' )
+    login = types.InlineKeyboardButton(text='🆔Авторизация', callback_data='login' )
     markup.add(login)
     bot.send_message(message.chat.id, "когда захотите вернуться нажмите на кнопку", reply_markup=markup)
 """
@@ -544,8 +534,8 @@ def call_training_register_call(message):#обработка каллорий и
         bot.register_next_step_handler(message, call_training_register_call)
         return None
     markup = types.InlineKeyboardMarkup()
-    time = types.InlineKeyboardButton(text="Продолжительность(мин)", callback_data="time")
-    distance = types.InlineKeyboardButton(text="Дистанция(км)", callback_data="distance")
+    time = types.InlineKeyboardButton(text="⏳Продолжительность(мин)", callback_data="time")
+    distance = types.InlineKeyboardButton(text="📏Дистанция(км)", callback_data="distance")
     markup.add(time, distance)
     bot.send_message(message.chat.id, """Отлично, теперь выбери что ввести длительность или дистанцию?""", reply_markup=markup)
 """"""
@@ -588,8 +578,8 @@ def description(message):#запрос описания
         handle_button(message)
         return
     markup = types.InlineKeyboardMarkup()
-    yes = types.InlineKeyboardButton(text="Да", callback_data="Yes")
-    no = types.InlineKeyboardButton(text="Нет", callback_data="No")
+    yes = types.InlineKeyboardButton(text="✅Да", callback_data="Yes")
+    no = types.InlineKeyboardButton(text="❌Нет", callback_data="No")
     markup.add(yes, no)
     bot.send_message(message.chat.id, """Почти готово, есть ли какие заметки к тренировке?""", reply_markup=markup)
 """"""
@@ -649,10 +639,10 @@ def view_workouts(message):#выбор как смотреть трениров�
     if not examination_register_and_login_and_status_log_in(message):
         return None
     markup = types.InlineKeyboardMarkup()
-    type_training = types.InlineKeyboardButton(text="посмотреть за тип", callback_data="type_training")
-    date_training = types.InlineKeyboardButton(text="посмотреть за период", callback_data="date_training")
-    type_and_date_training = types.InlineKeyboardButton(text="посмотреть за тип и период", callback_data="type_and_date_training")
-    all_training = types.InlineKeyboardButton(text="посмотреть все тренировки", callback_data="all_training")
+    type_training = types.InlineKeyboardButton(text="💪посмотреть за тип", callback_data="type_training")
+    date_training = types.InlineKeyboardButton(text="📅посмотреть за период", callback_data="date_training")
+    type_and_date_training = types.InlineKeyboardButton(text="💪📅посмотреть за тип и период", callback_data="type_and_date_training")
+    all_training = types.InlineKeyboardButton(text="📑посмотреть все тренировки", callback_data="all_training")
     markup.add(type_training)
     markup.add(date_training)
     markup.add(type_and_date_training)
@@ -1009,8 +999,8 @@ def reminder(message):
     
     if Database.get_all_reminder_by_user_name(user_name) is not None:
         markup = types.InlineKeyboardMarkup()
-        add_reminder_bttn = types.InlineKeyboardButton(text='Добавить напоминание', callback_data='add_reminder')
-        del_reminder_bttn = types.InlineKeyboardButton(text='Удалить напоминание', callback_data='del_reminder')
+        add_reminder_bttn = types.InlineKeyboardButton(text='⏰Добавить напоминание', callback_data='add_reminder')
+        del_reminder_bttn = types.InlineKeyboardButton(text='🗑Удалить напоминание', callback_data='del_reminder')
         markup.add(add_reminder_bttn, del_reminder_bttn)
         bot.send_message(message.chat.id, "ты хочешь удалить или добавить напоминания?", reply_markup=markup)
     else: 
@@ -1024,17 +1014,17 @@ def add_reminder(message):
     days_lst = []
     markup = types.InlineKeyboardMarkup()
     
-    monday = types.InlineKeyboardButton(text='Понедельник', callback_data='monday')
-    tuesday = types.InlineKeyboardButton(text='Вторник', callback_data='tuesday')
+    monday = types.InlineKeyboardButton(text='📅🟦Понедельник', callback_data='monday')
+    tuesday = types.InlineKeyboardButton(text='📅🟧Вторник', callback_data='tuesday')
 
-    wednesday = types.InlineKeyboardButton(text='Среда', callback_data='wednesday')
-    thursday = types.InlineKeyboardButton(text='Четверг', callback_data='thursday')
+    wednesday = types.InlineKeyboardButton(text='📅🟩 Среда', callback_data='wednesday')
+    thursday = types.InlineKeyboardButton(text='📅🟥Четверг', callback_data='thursday')
 
-    friday = types.InlineKeyboardButton(text='Пятница', callback_data='friday')
-    saturday = types.InlineKeyboardButton(text='Суббота', callback_data='saturday')
+    friday = types.InlineKeyboardButton(text='📅🟪Пятница', callback_data='friday')
+    saturday = types.InlineKeyboardButton(text='📅🟫Суббота', callback_data='saturday')
 
-    sunday = types.InlineKeyboardButton(text='Воскресенье', callback_data='sunday')
-    finish_reminder = types.InlineKeyboardButton(text='Это все', callback_data='finish_reminder')
+    sunday = types.InlineKeyboardButton(text='📅⬛Воскресенье', callback_data='sunday')
+    finish_reminder = types.InlineKeyboardButton(text='📅🛑Это все', callback_data='finish_reminder')
 
     markup.add(monday, tuesday)
     markup.add(wednesday, thursday)
@@ -1088,8 +1078,8 @@ def del_reminder(message):
         handle_button(message)
         return
     markup = types.InlineKeyboardMarkup()
-    del_reminder_yes = types.InlineKeyboardButton(text="да", callback_data="del_reminder_yes")
-    del_reminder_no = types.InlineKeyboardButton(text="нет", callback_data="del_reminder_no")
+    del_reminder_yes = types.InlineKeyboardButton(text="✅да", callback_data="del_reminder_yes")
+    del_reminder_no = types.InlineKeyboardButton(text="❌нет", callback_data="del_reminder_no")
     markup.add(del_reminder_yes, del_reminder_no)
     bot.send_message(message.chat.id, """вы уверены?""", reply_markup=markup)
 """"""
@@ -1148,8 +1138,8 @@ def delete_account(message):#вопрос уверенности
     if not examination_register_and_login_and_status_log_in(message):
         return None
     markup = types.InlineKeyboardMarkup()
-    del_yes = types.InlineKeyboardButton(text="да", callback_data="del_yes")
-    del_no = types.InlineKeyboardButton(text="нет", callback_data="del_no")
+    del_yes = types.InlineKeyboardButton(text="✅да", callback_data="del_yes")
+    del_no = types.InlineKeyboardButton(text="❌нет", callback_data="del_no")
     markup.add(del_yes, del_no)
     bot.send_message(message.chat.id, """вы уверены?""", reply_markup=markup)
 """"""
@@ -1158,8 +1148,8 @@ def processing_del_yes(message):#второй вопрос уверенност�
         handle_button(message)
         return
     markup = types.InlineKeyboardMarkup()
-    del_yes_2 = types.InlineKeyboardButton(text="да", callback_data="del_yes_2")
-    del_no_2 = types.InlineKeyboardButton(text="нет", callback_data="del_no_2")
+    del_yes_2 = types.InlineKeyboardButton(text="✅да", callback_data="del_yes_2")
+    del_no_2 = types.InlineKeyboardButton(text="❌нет", callback_data="del_no_2")
     markup.add(del_yes_2, del_no_2)
     bot.send_message(message.chat.id, """вы потеряете все записи о себе, может все таки останетесь?""", reply_markup=markup)
 """"""
@@ -1180,7 +1170,7 @@ def processing_del_finish(message):#дополнительное сообщен�
         handle_button(message)
         return
     markup = types.InlineKeyboardMarkup()
-    register = types.InlineKeyboardButton(text='Регистрация', callback_data='register' )
+    register = types.InlineKeyboardButton(text='🔐Регистрация', callback_data='register' )
     markup.add(register)
     bot.send_message(message.chat.id, """если захотите вернуться, просто нажмите на кнопку""", reply_markup=markup)
 """
