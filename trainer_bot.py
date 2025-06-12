@@ -311,7 +311,7 @@ def callback_query_statistics(call):
 """
 """
 """
-"""         
+"""   
 @bot.message_handler(func=lambda message: message.text == "Назад")#для обработки сообщения 'Назад'
 def handle_button(message):
     if message.text == "Назад":
@@ -479,7 +479,6 @@ def login_password(message, user_name): #проверка совпадения �
         return None
     bot.send_message(message.chat.id, f"Увы, но вы не вошли в аккаунт, неверный пароль, попробуй ввести его завново")
     bot.register_next_step_handler(message, login_password)
-
 """
 """
 """
@@ -600,7 +599,6 @@ def processing_yes(message):#если ответил да, то обработк
         return
     global description_training
     description_training = message.text
-    bot.send_message(message.chat.id, """так и записал в твою тренировку""")
     save_training(message)
 """"""
 def save_training(message):#сохранение в БД
@@ -615,7 +613,6 @@ def save_training(message):#сохранение в БД
     Database.add_training(training)
     bot.send_message(message.chat.id, """Хорошо, я записал твою тренировку""")
     check_goal_after_save_training(message, telegram_user_id, user, type_training)
-
 """"""
 """"""
 def check_goal_after_save_training(message, telegram_user_id, user:User, type_training):#проверка выполнения цели
@@ -642,17 +639,6 @@ def check_goal_after_save_training(message, telegram_user_id, user:User, type_tr
 """)
             Database.delete_goal_if_distance_done(goal)
     return None
-
-""""""
-""""""
-#                     print_text = f"""
-# Поздравляю, ты выполнил свою цель:
-# дата установки цели - {goal.date_start};
-# тип тренировки - {goal.type_training}
-# дистанция цели - {goal.distance_training}
-# дата окончания - {goal.date_finish}
-# осталось дней - {left_days.days}
-# """
 """"""
 """"""
 @bot.message_handler(commands=['view_workouts'])#функция view_workouts для просмотра тренировок
@@ -1074,7 +1060,6 @@ def processing_time_reminder(message):
     telegram_user_id = str(message.chat.id)
     user = Database.search_user_by_telegram_id(telegram_user_id)
     user_name = user.user_name
-    time_reminder = datetime.strptime(time_reminder, "%H:%M").time()
     for day_reminder in days_lst:
         reminder = Reminder(user_name, day_reminder, time_reminder)
         Database.set_reminder(reminder)
@@ -1226,6 +1211,14 @@ def check_goals_every_hour():
                     else:
                         return None
         time.sleep(3600)
+
+
+@bot.message_handler(content_types='text')   
+def message_reply(message):
+    text = message.text
+    if text[0] != "/" and text != "Назад":
+
+        bot.send_message(message.chat.id,"я не понял что вы хотели")
 reminder_thread = threading.Thread(target=check_reminder_every_minutes, daemon=True)
 reminder_thread = threading.Thread(target=check_goals_every_hour, daemon=True)
 reminder_thread.start()
