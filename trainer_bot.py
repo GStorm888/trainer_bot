@@ -1178,7 +1178,7 @@ def processing_del_finish(message):#дополнительное сообщен�
 """
 """
 """
-def check_goals_every_hour():
+def check_goals_every_minutes():
     while True:
         now = datetime.datetime.now()
         today = now.strftime("%Y-%m-%d")
@@ -1199,7 +1199,7 @@ def check_goals_every_hour():
                         Database.delete_goal_if_today_is_day_finish(goal.user_name, today)
                     else:
                         return None
-        time.sleep(3600)
+        time.sleep(60)
 
 
 @bot.message_handler(content_types='text')   
@@ -1209,6 +1209,6 @@ def message_reply(message):
         bot.send_message(message.chat.id,"Я не понял что вы хотели, возможно вы хотели нажать на кнопку?")
 
 reminder_thread = threading.Thread(target=check_reminder_every_minutes, daemon=True)
-reminder_thread = threading.Thread(target=check_goals_every_hour, daemon=True)
+reminder_thread = threading.Thread(target=check_goals_every_minutes, daemon=True)
 reminder_thread.start()
 bot.infinity_polling()
