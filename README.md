@@ -44,8 +44,8 @@
 
 1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/yourusername/teainer_bot.git
-   cd teainer_bot
+   git clone https://github.com/yourusername/trainer_bot.git
+   cd trainer_bot
    ```
 
 2. Установите зависимости:
