@@ -13,6 +13,7 @@ import threading
 import time
 import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.ticker as ticker
 matplotlib.use('agg')
 from config import TOKEN#импорт файлов проекта
 from data_base import Database
@@ -330,9 +331,6 @@ def start_help_back_button(message):#появление кнопки '🔙Наз
 def help(message):
     if not examination_register_and_login_and_status_log_in(message):
         return None
-    if message.text == "🔙Назад" or message.text == "Назад":
-        handle_button(message)
-        return
     markup = types.InlineKeyboardMarkup()
     
     help_bttn = types.InlineKeyboardButton(text='🆘help', callback_data='help')
@@ -950,37 +948,70 @@ def view_goals(message):
 """
 """
 """
-@bot.message_handler(commands=['statistics'])  #функция statistics для  просмотра статистики(работает нужен вывод)
+@bot.message_handler(commands=['statistics'])
 def statistics(message):
-    if message.text == "🔙Назад" or message.text == "Назад":
+    if message.text in ["🔙Назад", "Назад"]:
         handle_button(message)
         return
+
     telegram_user_id = str(message.chat.id)
     user = Database.search_user_by_telegram_id(telegram_user_id)
+    if user is None:
+        bot.send_message(message.chat.id, "Вы не зарегистрированы")
+        register(message)
+        return
     all_trainings = Database.get_all_training_by_user_name(user.user_name)
+
     if all_trainings is None:
         bot.send_message(message.chat.id, "У вас еще нет тренировок")
-        return None
+        return
 
-    month_counts_dic = {}
+    def add_months(source_date, months):
+        month = source_date.month - 1 + months
+        year = source_date.year + month // 12
+        month = month % 12 + 1
+        return datetime.date(year, month, 1)
+
+    today = datetime.date.today()
+    today_month = today.replace(day=1)
+    start_month = add_months(today_month, -11)  # Начинаем с 11 месяцев назад (включая текущий)
+
+    # Список 12 месяцев: от start_month до today_month
+    months = []
+    current = start_month
+    for i in range(12):
+        months.append(current.strftime("%Y-%m"))
+        current = add_months(current, 1)
+
+    # Подсчёт тренировок
+    training_in_month_counts = {month: 0 for month in months}
     for training in all_trainings:
-        date = training.date_training
-        date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-        month = date.strftime("%m")
-        if month in month_counts_dic:
-            month_counts_dic[month] += 1
-        else:
-            month_counts_dic[month] = 1
+        try:
+            date = datetime.datetime.strptime(training.date_training, "%Y-%m-%d").date()
+            month_str = date.strftime("%Y-%m")
+            if month_str in training_in_month_counts:
+                training_in_month_counts[month_str] += 1
+        except:
+            None
 
-    months = sorted(month_counts_dic)
-    counts = [month_counts_dic[m] for m in months]
+    # Построение графика
+    x_labels = months
+    y_values = [training_in_month_counts[month] for month in x_labels]
 
-    plt.bar(months, counts, color='pink')
+    plt.figure(figsize=(10, 5))
+    plt.bar(x_labels, y_values, color='pink')
     plt.xlabel("Месяц")
     plt.ylabel("Количество тренировок")
-    plt.title("Тренировки по месяцам")
+    plt.title("Тренировки за прошедший год")
+
+    # 👉 Ось Y с целыми значениями
+    ax = plt.gca()
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+
+    plt.tight_layout()
     plt.savefig("stistic.png")
     plt.close()
+
     with open("stistic.png", "rb") as photo:
         bot.send_photo(message.chat.id, photo)
 """
