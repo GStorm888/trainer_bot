@@ -297,7 +297,7 @@ def callback_query_statistics(call):
 """
 """
 """   
-@bot.message_handler(func=lambda message: message.text == "🔙Назад"  or message.text == "Назад")#для обработки сообщения '🔙Назад'
+@bot.message_handler(func=lambda message: message.text == "🔙Назад"  or message.text == "Назад")#для обработки сообщения '🔙🔙Назад'
 def handle_button(message):
     bot.send_message(message.chat.id, "Хорошо, возвращаю вас в Help")
     help(message)
@@ -491,6 +491,9 @@ def logout(message):
             logout_finish(message)
 """"""
 def logout_finish(message):#функция для кнопки логин после выхода с аккаунта
+    if message.text == "🔙Назад":
+        handle_button(message)
+        return
     markup = types.InlineKeyboardMarkup()
     login = types.InlineKeyboardButton(text='🆔Авторизация', callback_data='login' )
     markup.add(login)
