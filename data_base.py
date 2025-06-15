@@ -1,4 +1,4 @@
-#файл для пользования к базой данных
+#файл для пользования базой данных
 import sqlite3
 from user import User, Training, Goal, Reminder
 """
