@@ -14,7 +14,6 @@ import time
 import matplotlib.pyplot as plt
 import matplotlib
 import matplotlib.ticker as ticker
-matplotlib.use('agg')
 from config import TOKEN#импорт файлов проекта
 from data_base import Database
 from user import User, Training, Goal, Reminder
@@ -976,14 +975,12 @@ def statistics(message):
     today_month = today.replace(day=1)
     start_month = add_months(today_month, -11)  # Начинаем с 11 месяцев назад (включая текущий)
 
-    # Список 12 месяцев: от start_month до today_month
     months = []
     current = start_month
     for i in range(12):
         months.append(current.strftime("%Y-%m"))
         current = add_months(current, 1)
 
-    # Подсчёт тренировок
     training_in_month_counts = {month: 0 for month in months}
     for training in all_trainings:
         try:
@@ -994,7 +991,7 @@ def statistics(message):
         except:
             None
 
-    # Построение графика
+    matplotlib.use('agg')
     x_labels = months
     y_values = [training_in_month_counts[month] for month in x_labels]
 
@@ -1004,7 +1001,6 @@ def statistics(message):
     plt.ylabel("Количество тренировок")
     plt.title("Тренировки за прошедший год")
 
-    # 👉 Ось Y с целыми значениями
     ax = plt.gca()
     ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
 
@@ -1157,9 +1153,9 @@ def export_data(message):
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(trainings_lst)
-    send_scv_file(telegram_user_id, writer, csv_filename)
+    send_csv_file(telegram_user_id, writer, csv_filename)
 """"""
-def send_scv_file(telegram_user_id, file, csv_filename):
+def send_csv_file(telegram_user_id, file, csv_filename):
     doc = open(csv_filename, 'rb')
     bot.send_document(telegram_user_id, doc)
 """
