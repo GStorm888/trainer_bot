@@ -550,7 +550,6 @@ def processing_time(message):#если выбрал продолжительно
     if not time_training.isdigit():
         bot.send_message(message.chat.id, """Вы должены ввести только число, попробуйте еще раз""")
         bot.register_next_step_handler(message.chat.id, processing_time)
-    # bot.send_message(message.chat.id, """Хорошо, отличная продолжительность""") работает
     description(message)
 """"""
 def processing_distance(message):#если выбрал дистанцию потом переход к описанию
