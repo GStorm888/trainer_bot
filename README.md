@@ -45,7 +45,6 @@
 1. Клонируйте репозиторий:
    ```bash
    git clone https://github.com/GStorm888/trainer_bot.git
-   cd trainer_bot
    ```
 2. Перейдите в папку:
    ```bash
