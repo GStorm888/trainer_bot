@@ -44,21 +44,24 @@
 
 1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/yourusername/trainer_bot.git
+   git clone https://github.com/GStorm888/trainer_bot.git
+   ```
+2. Перейдите в папку:
+   ```bash
    cd trainer_bot
    ```
-
-2. Установите зависимости:
+   
+3. Установите зависимости:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Укажите ваш Telegram Bot Token в файле `config` или напрямую в коде:
+4. Укажите ваш Telegram Bot Token в файле `config` или напрямую в коде:
    ```env
    TOKEN=your_telegram_bot_token
    ```
 
-4. Запустите бота:
+5. Запустите бота:
    ```bash
    python trainer_bot.py
    ```
