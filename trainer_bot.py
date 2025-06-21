@@ -307,6 +307,7 @@ def register(message):
     if Database.search_user_by_telegram_id(telegram_user_id):
         if Database.examination_status_log_in(1, telegram_user_id) is not None:
             bot.send_message(message.chat.id, "Ура, вы уже зарегистрированы и авторизированы")
+            help(message)
             return None
         bot.send_message(message.chat.id, "Ура, вы уже зарегистрированы")
         login(message)
@@ -347,7 +348,6 @@ def login(message):  # начало, ввод имени и проверка н�
         return None
     if Database.examination_status_log_in(1, telegram_user_id):  # если пользователь активен
         bot.send_message(message.chat.id, "Ура,  вы уже в аккаунте")
-        time.sleep(1)
         help(message)
         return None
     bot.send_message(message.chat.id, "Для входа введите имя пользователя")
@@ -547,7 +547,6 @@ def check_goal_after_save_training(message, telegram_user_id, user: User, type_t
 осталось дней - {left_days.days}
 """)
             Database.delete_goal_if_distance_done(goal)
-    help(message)
     return None
 
 # функция view_workouts для просмотра тренировок
@@ -723,7 +722,7 @@ def view_workouts_to_type_and_date_print(message):  # вывод трениро�
     user_name = user.user_name
     workouts_to_type_and_date = Database.view_workouts_to_type_and_date(type_training, date_start, today, user_name)
     if workouts_to_type_and_date is None:
-        bot.send_message(message.chat.id, f"""Я не нашел у вас тренировок с типом {type_training} за с {date_start}""")
+        bot.send_message(message.chat.id, f"""Я не нашел у вас тренировок с типом {type_training} с {date_start}""")
         return None
     count = 0
     bot.send_message(message.chat.id,
@@ -765,16 +764,16 @@ def view_workouts_to_all(message):  # просмотр всех трениров
 {count}:
 дата тренировки {workouts.date_training};
 созженные каллорие - {workouts.call_training}
-                     """
+"""
         if workouts.time_training is not None:
             print_text += f"""время тренировки - {workouts.time_training}
-                           """
+"""
         if workouts.distance_training is not None:
             print_text += f"""дистанция тренировки - {workouts.distance_training}
-                           """
+"""
         if workouts.description_training is not None:
             print_text += f"""заметка к тренировке - {workouts.description_training}
-                           """
+"""
         bot.send_message(message.chat.id, print_text)
 
 # функция set_goal для  установки цели(работает осталось оформление)
@@ -1061,16 +1060,17 @@ def export_data(message):
             }
         trainings_lst.append(trainings_lib)
     csv_filename = "training.csv"
-    with open(csv_filename, "w", newline="") as file:
-        fieldnames = ["Тип тренировки", "Дата тренировки", "Каллории",
-                    "Продолжительность", "Дистанция", "Заметка"]
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
+    fieldnames = ["Тип тренировки", "Дата тренировки", "Каллории",
+            "Продолжительность", "Дистанция", "Заметка"]
+    with open(csv_filename, "w", newline="", encoding='utf-8-sig') as file:
+
+        writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=";")
         writer.writeheader()
         writer.writerows(trainings_lst)
-    send_csv_file(telegram_user_id, writer, csv_filename)
+    send_csv_file(telegram_user_id, csv_filename)
 
 
-def send_csv_file(telegram_user_id, file, csv_filename):#отправка пользователю файла
+def send_csv_file(telegram_user_id, csv_filename):#отправка пользователю файла
     doc = open(csv_filename, "rb")
     bot.send_document(telegram_user_id, doc)
 
@@ -1134,7 +1134,7 @@ def check_reminder_every_minutes():
                 if (int(reminder.day_reminder) == today and reminder.time_reminder == time_now):
                     user = Database.return_user_by_name(reminder.user_name)
                     if user.status_log_in == 1:
-                        bot.send_message(user.telegram_user_id, "⏰Я не забываю отправлять вам напоминания")
+                        bot.send_message(user.telegram_user_id, "⏰Напоминание! Я не забываю отправлять вам напоминания")
                     else:
                         return None
         time.sleep(60)
