@@ -4,3 +4,6 @@ __pycache__
 config.py
 .DS_Store
 venv
+stistic.png
+trainer_bot.db
+training.csv
