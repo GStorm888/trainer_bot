@@ -1,4 +1,4 @@
-#файл для пользования базой данных
+#файл для использования базы данных
 import sqlite3
 from user import User, Training, Goal, Reminder
 
@@ -6,48 +6,14 @@ class Database:
     SCHEMA = "schema.sql"
     DATABASE = "trainer_bot.db"
 
-    @staticmethod #удаление таблиц (для тестов)
-    def drop():
-        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
-
-        cursor = connection.cursor()
-
-        cursor.execute("""DROP TABLE users""")
-        cursor.execute("""DROP TABLE trainings""")
-        cursor.execute("""DROP TABLE goals""")
-        cursor.execute("""DROP TABLE reminder""")
-        connection.commit()
-        return True
-
-    @staticmethod#промотр всех тренировок в БД
-    def get_all_training():
-        connection = sqlite3.connect(Database.DATABASE)
-
-        cursor = connection.cursor()
-
-        cursor.execute("SELECT * FROM trainings")
-
-        all_trainings = cursor.fetchall()
-        trainings = []
-        for id, user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training in all_trainings:
-            training = Training(user_name, type_trainig, date_training, call_training, time_training, distance_training, description_training,  id)
-            trainings.append(training) 
-        if len(trainings) == 0:
-            return None
-        return trainings
-
-    @staticmethod #проверить нужно ли и где
+    @staticmethod #работа с таблицей(нужно чтобы не повторялся код)
     def execute(sql, params=()):
-        # ПОДКЛЮЧАЕМСЯ К БАЗЕ ДАННЫХ
         connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
 
-        # получаем курсор
         cursor = connection.cursor()
 
-        # выполнение скрипта для базы данных
         cursor.execute(sql, params)
 
-        # фиксируем измнения в базе данных
         connection.commit()
 
     @staticmethod#создание таблиц
@@ -67,7 +33,6 @@ class Database:
                        [user.user_name, user.user_password, user.status_log_in, user.telegram_user_id])
         return True
     @staticmethod #получение всех пользователей
-
     def get_all_users():
         connection = sqlite3.connect(Database.DATABASE)
 
@@ -141,15 +106,11 @@ class Database:
     
     @staticmethod #добавление тренировки
     def add_training(training:Training):
-        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
-
-        cursor = connection.cursor()
-
-        cursor.execute("""INSERT INTO trainings (user_name, type_training, date_training, call_training, time_training, distance_training, description_training)
-        VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        Database.execute("""INSERT INTO trainings (user_name, type_training, date_training, call_training,
+                         time_training, distance_training, description_training)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)""",
         [training.user_name, training.type_training, training.date_training, training.call_training,
         training.time_training, training.distance_training, training.description_training])
-        connection.commit()
         return True
 
     @staticmethod#получение всех тренировок по имени пользователя
@@ -244,18 +205,13 @@ class Database:
 
     @staticmethod #добавление цели
     def set_goal(goal:Goal):
-        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
-
-        cursor = connection.cursor()
-
-        cursor.execute("""INSERT INTO goals (user_name, date_start, type_training, distance_training, date_finish)
+        Database.execute("""INSERT INTO goals (user_name, date_start, type_training, distance_training, date_finish)
         VALUES (?, ?, ?, ?, ?)""",
         [goal.user_name, goal.date_start, goal.type_training,
          goal.distance_training, goal.date_finish])
-        connection.commit()
         return True
 
-    @staticmethod#промотр целей тренировок(для тестов)
+    @staticmethod#промотр целей тренировок
     def get_all_goal():
         connection = sqlite3.connect(Database.DATABASE)
 
@@ -289,7 +245,7 @@ class Database:
             return None
         return goals
 
-    @staticmethod#получение всех целей пользователя по имени
+    @staticmethod#получение всех целей пользователя по имени и типу
     def get_all_goal_by_user_name_and_type(user_name, type_training):
         connection = sqlite3.connect(Database.DATABASE)
 
@@ -308,21 +264,15 @@ class Database:
 
     @staticmethod#Удаление цели если дистанция пройдена
     def delete_goal_if_distance_done(goal:Goal):
-        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
-
-        cursor = connection.cursor()
-        cursor.execute("""DELETE FROM goals WHERE user_name=? AND date_start=?
+        Database.execute("""DELETE FROM goals WHERE user_name=? AND date_start=?
         AND type_training=? AND distance_training=? AND date_finish=?""",
         [goal.user_name, goal.date_start, goal.type_training, goal.distance_training, goal.date_finish])
-        connection.commit()
+        return True
 
-    @staticmethod#удаление цели
+    @staticmethod#удаление цели если время прошло и цель не выполнена
     def delete_goal_if_today_is_day_finish(user_name, today):
-        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
-
-        cursor = connection.cursor()
-        cursor.execute("""DELETE FROM goals WHERE user_name=? AND date_finish=?""", [user_name, today])
-        connection.commit()
+        Database.execute("""DELETE FROM goals WHERE user_name=? AND date_finish=?""", [user_name, today])
+        return True
 
     @staticmethod #добавление напоминаний
     def set_reminder(reminder:Reminder):
@@ -336,7 +286,7 @@ class Database:
         connection.commit()
         return True
 
-    @staticmethod#промотр всех тренировок(для тестов)
+    @staticmethod#промотр всех напоминаний
     def get_all_reminder():
         connection = sqlite3.connect(Database.DATABASE)
 
@@ -372,21 +322,13 @@ class Database:
 
     @staticmethod #удаление всех напоминаний пользователя
     def delete_reminder(user_name):
-        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
-
-        cursor = connection.cursor()
-        cursor.execute("""DELETE FROM reminder WHERE user_name=?""", [user_name])
-        connection.commit()
+        Database.execute("""DELETE FROM reminder WHERE user_name=?""", [user_name])
+        return True
 
     @staticmethod #удаление профиля и всех данных
     def delete_account(user_name):
-        connection = sqlite3.connect(Database.DATABASE, check_same_thread=False)
-
-        cursor = connection.cursor()
-
-        cursor.execute("""DELETE FROM users WHERE user_name=?""", [user_name])
-        cursor.execute("""DELETE FROM trainings WHERE user_name=?""", [user_name])
-        cursor.execute("""DELETE FROM goals WHERE user_name=?""", [user_name])
-        cursor.execute("""DELETE FROM reminder WHERE user_name=?""", [user_name])
-        connection.commit()
+        Database.execute("""DELETE FROM users WHERE user_name=?""", [user_name])
+        Database.execute("""DELETE FROM trainings WHERE user_name=?""", [user_name])
+        Database.execute("""DELETE FROM goals WHERE user_name=?""", [user_name])
+        Database.execute("""DELETE FROM reminder WHERE user_name=?""", [user_name])
         return True

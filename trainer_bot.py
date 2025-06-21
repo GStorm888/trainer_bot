@@ -380,7 +380,7 @@ def login_password(message, user_name):  # проверка совпадения
         if user.status_log_in == 0:
             Database.update_status_log_in(1, telegram_user_id)
         bot.send_message(message.chat.id, f"Ура, вы вошли в аккаунт, добро пожаловать {user_name}")
-        help(message)
+        start_help_back_button(message)
         return None
     bot.send_message(message.chat.id, "Увы, но вы не вошли в аккаунт, неверный пароль, попробуйте ввести его корректно")
     bot.register_next_step_handler(message, login_password)
@@ -540,7 +540,7 @@ def check_goal_after_save_training(message, telegram_user_id, user: User, type_t
                 message.chat.id,
                 f"""
 Поздравляю, вы выполнили свою цель:
-дата установки цели - {goal.date_start};
+дата установки цели - {goal.date_start}
 тип тренировки - {goal.type_training}
 дистанция цели - {goal.distance_training}
 дата окончания - {goal.date_finish}
@@ -610,7 +610,7 @@ def view_workouts_to_type_print(message):  # вывод тренировок е�
         count += 1
         print_text = f"""
 {count}:
-дата тренировки {workouts.date_training};
+дата тренировки {workouts.date_training}
 созженные каллорие - {workouts.call_training}
 """
         if workouts.time_training is not None:
@@ -665,7 +665,7 @@ def view_workouts_to_date_print(message):  # вывод тренировок е�
         count += 1
         print_text = f"""
 {count}:
-дата тренировки {workouts.date_training};
+дата тренировки {workouts.date_training}
 созженные каллорие - {workouts.call_training}
 """
         if workouts.time_training is not None:
@@ -731,7 +731,7 @@ def view_workouts_to_type_and_date_print(message):  # вывод трениро�
         count += 1
         print_text = f"""
 {count}:
-дата тренировки {workouts.date_training};
+дата тренировки {workouts.date_training}
 созженные каллорие - {workouts.call_training}
 """
         if workouts.time_training is not None:
@@ -762,7 +762,8 @@ def view_workouts_to_all(message):  # просмотр всех трениров
         count += 1
         print_text = f"""
 {count}:
-дата тренировки {workouts.date_training};
+тип тренировки - {workouts.type_training}
+дата тренировки {workouts.date_training}
 созженные каллорие - {workouts.call_training}
 """
         if workouts.time_training is not None:
@@ -776,7 +777,7 @@ def view_workouts_to_all(message):  # просмотр всех трениров
 """
         bot.send_message(message.chat.id, print_text)
 
-# функция set_goal для  установки цели(работает осталось оформление)
+# функция set_goal для  установки цели
 @bot.message_handler(commands=["set_goal"])  
 def set_goal(message):  # запрос типа
     if message.text == "🔙Назад" or message.text == "Назад":
@@ -866,7 +867,7 @@ def view_goals(message):
         count += 1
         print_text = f"""
 {count}:
-дата установки цели - {goal.date_start};
+дата установки цели - {goal.date_start}
 тип тренировки - {goal.type_training}
 дистанция цели - {goal.distance_training}
 осталась дистанция -{left_distance}
@@ -1152,7 +1153,7 @@ def check_goals_every_minutes():
                     if user.status_log_in == 1:
                         bot.send_message(user.telegram_user_id, "Мне очень жаль, вы не выполнили свою цель")
                         print_text = f"""
-дата установки цели - {goal.date_start};
+дата установки цели - {goal.date_start}
 тип тренировки - {goal.type_training}
 дистанция цели - {goal.distance_training}
 дата окончания - {goal.date_finish}
