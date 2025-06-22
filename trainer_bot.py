@@ -4,7 +4,7 @@ import hashlib
 import threading
 import time
 
-import matplotlib  # импорт библиотек 
+import matplotlib  # импорт библиотек
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from telebot import TeleBot, types
@@ -15,7 +15,8 @@ from user import Goal, Reminder, Training, User
 
 bot = TeleBot(TOKEN)  # создание бота через токен
 
-#проверка текста на формат времени
+
+# проверка текста на формат времени
 def examination_date_type(user_time):
     time_format = "%H:%M"
     try:
@@ -24,13 +25,15 @@ def examination_date_type(user_time):
     except:
         return False
 
-#проверка текста на значение int
+
+# проверка текста на значение int
 def examination_int_type(text_int):
     if text_int.isdigit():
         return True
     return False
 
-#проверка регистрации и залогинености
+
+# проверка регистрации и залогинености
 def examination_register_and_login_and_status_log_in(message):
     telegram_user_id = str(message.chat.id)
     if Database.get_all_users() is None:
@@ -48,6 +51,7 @@ def examination_register_and_login_and_status_log_in(message):
     else:
         return True
 
+
 # для обработки кнопок add_workout заметки
 @bot.callback_query_handler(func=lambda call: call.data in ["Yes", "No"])
 def callback_query_description(call):
@@ -62,35 +66,52 @@ def callback_query_description(call):
         bot.delete_message(message.chat.id, message.message_id)
         save_training(message)
 
+
 # для обработки кнопок register и login
-@bot.callback_query_handler(func=lambda call: call.data in ["register", "login"]) 
+@bot.callback_query_handler(func=lambda call: call.data in ["register", "login"])
 def callback_query_register_and_login(call):
     message = call.message
-    if call.data == "register": 
+    if call.data == "register":
         bot.delete_message(message.chat.id, message.message_id)
         register(message)
     elif call.data == "login":
         bot.delete_message(message.chat.id, message.message_id)
         login(message)
 
+
 # для обработки кнопок add_workout продолжительность или дистанция
-@bot.callback_query_handler(func=lambda call: call.data in ["time", "distance"])  
+@bot.callback_query_handler(func=lambda call: call.data in ["time", "distance"])
 def callback_query_time_or_distance_add_workout(call):
     message = call.message
-    if call.data == "time": 
+    if call.data == "time":
         bot.delete_message(message.chat.id, message.message_id)
-        bot.send_message(message.chat.id, """Хорошо, введите время тренировки в минутах""")
+        bot.send_message(
+            message.chat.id, """Хорошо, введите время тренировки в минутах"""
+        )
         bot.register_next_step_handler(message, processing_time)
-    elif call.data == "distance": 
+    elif call.data == "distance":
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, """Хорошо, введите дистанцию в метрах""")
         bot.register_next_step_handler(message, processing_distance)
 
 
 # для обработки кнопок в меню help
-@bot.callback_query_handler(func=lambda call: call.data in ["help", "start", "add_workout",
-                                                             "view_workouts", "set_goal", "view_goals", "statistics",
-                                                            "reminder", "export_data", "logout", "delete_account"])
+@bot.callback_query_handler(
+    func=lambda call: call.data
+    in [
+        "help",
+        "start",
+        "add_workout",
+        "view_workouts",
+        "set_goal",
+        "view_goals",
+        "statistics",
+        "reminder",
+        "export_data",
+        "logout",
+        "delete_account",
+    ]
+)
 def callback_query_menu_help(call):
     message = call.message
     if call.data == "help":
@@ -99,19 +120,19 @@ def callback_query_menu_help(call):
     elif call.data == "start":
         bot.delete_message(message.chat.id, message.message_id)
         start(message)
-    elif call.data == "add_workout": 
+    elif call.data == "add_workout":
         bot.delete_message(message.chat.id, message.message_id)
         add_workout(message)
-    elif call.data == "view_workouts": 
+    elif call.data == "view_workouts":
         bot.delete_message(message.chat.id, message.message_id)
         view_workouts(message)
-    elif call.data == "set_goal":  
+    elif call.data == "set_goal":
         bot.delete_message(message.chat.id, message.message_id)
         set_goal(message)
-    elif call.data == "view_goals":  
+    elif call.data == "view_goals":
         bot.delete_message(message.chat.id, message.message_id)
         view_goals(message)
-    elif call.data == "statistics":  
+    elif call.data == "statistics":
         bot.delete_message(message.chat.id, message.message_id)
         statistics(message)
     elif call.data == "reminder":
@@ -120,7 +141,7 @@ def callback_query_menu_help(call):
     elif call.data == "export_data":
         bot.delete_message(message.chat.id, message.message_id)
         export_data(message)
-    elif call.data == "logout": 
+    elif call.data == "logout":
         bot.delete_message(message.chat.id, message.message_id)
         logout(message)
     elif call.data == "delete_account":
@@ -129,17 +150,19 @@ def callback_query_menu_help(call):
 
 
 # для обработки кнопок view_workouts выбор как смотреть
-@bot.callback_query_handler(func=lambda call: call.data in ["type_training", "date_training", 
-                                                           "type_and_date_training", "all_training"])
+@bot.callback_query_handler(
+    func=lambda call: call.data
+    in ["type_training", "date_training", "type_and_date_training", "all_training"]
+)
 def callback_query_view_workouts(call):
     message = call.message
-    if call.data == "type_training":  # тип 
+    if call.data == "type_training":  # тип
         bot.delete_message(message.chat.id, message.message_id)
         view_workouts_to_type(message)
-    elif call.data == "date_training":  # период 
+    elif call.data == "date_training":  # период
         bot.delete_message(message.chat.id, message.message_id)
         view_workouts_to_date(message)
-    elif call.data == "type_and_date_training":  # тип и период 
+    elif call.data == "type_and_date_training":  # тип и период
         bot.delete_message(message.chat.id, message.message_id)
         view_workouts_to_type_and_date(message)
     elif call.data == "all_training":  # все тренировки
@@ -148,7 +171,9 @@ def callback_query_view_workouts(call):
 
 
 # для обработки кнопок удаления аккаунта
-@bot.callback_query_handler(func=lambda call: call.data in ["del_yes", "del_no", "del_yes_2", "del_no_2"])
+@bot.callback_query_handler(
+    func=lambda call: call.data in ["del_yes", "del_no", "del_yes_2", "del_no_2"]
+)
 def callback_query_del_profile(call):
     message = call.message
     if call.data == "del_yes":  # удаление аккаунта дальше процесс
@@ -157,7 +182,7 @@ def callback_query_del_profile(call):
     elif call.data == "del_no":  # удаление аккаунта стоп
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, """Ура, не надо нас покидать""")
-    elif call.data == "del_yes_2":  # удаление аккаунта стоп 
+    elif call.data == "del_yes_2":  # удаление аккаунта стоп
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, """Ура, не надо нас покидать""")
     elif call.data == "del_no_2":  # удаление аккаунта конец
@@ -167,8 +192,18 @@ def callback_query_del_profile(call):
 
 # для обработки кнопок добавления непоминания(дни недели и переход дальше)
 @bot.callback_query_handler(
-    func=lambda call: call.data in ["monday", "tuesday", "wednesday", "thursday",
-                                "friday", "saturday", "sunday", "finish_reminder"])
+    func=lambda call: call.data
+    in [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+        "finish_reminder",
+    ]
+)
 def callback_query_reminder_days_and_next_step(call):
     message = call.message
 
@@ -200,7 +235,10 @@ def callback_query_reminder_days_and_next_step(call):
 
 
 # для обработки кнопок удаления и создания напоминания
-@bot.callback_query_handler(func=lambda call: call.data in ["del_reminder", "add_reminder", "del_reminder_yes", "del_reminder_no"])
+@bot.callback_query_handler(
+    func=lambda call: call.data
+    in ["del_reminder", "add_reminder", "del_reminder_yes", "del_reminder_no"]
+)
 def callback_query_del_and_add_reminder(call):
     message = call.message
     if call.data == "del_reminder":  # удаление всех напоминаний
@@ -216,32 +254,46 @@ def callback_query_del_and_add_reminder(call):
         bot.delete_message(message.chat.id, message.message_id)
         bot.send_message(message.chat.id, "правильно, не нужно этого делать")
 
+
 # для обработки сообщения 'Назад'
-@bot.message_handler(func=lambda message: message.text == "🔙Назад" or message.text == "Назад") 
+@bot.message_handler(
+    func=lambda message: message.text == "🔙Назад" or message.text == "Назад"
+)
 def handle_button(message):
     bot.send_message(message.chat.id, "Хорошо, возвращаю вас в Help")
     help(message)
 
+
 # функция start для начала работы бота
-@bot.message_handler(commands=["start"])  
+@bot.message_handler(commands=["start"])
 def start(message):
     if not examination_register_and_login_and_status_log_in(message):
         return None
     markup = types.InlineKeyboardMarkup()
     help_bttn = types.InlineKeyboardButton(text="🆘help", callback_data="help")
     markup.add(help_bttn)
-    bot.send_message(message.chat.id, """Привет, я ваш личный тренер Денис. Нажмите /help чтобы ознакомиться с командами""", reply_markup=markup)
+    bot.send_message(
+        message.chat.id,
+        """Привет, я ваш личный тренер Денис. Нажмите /help чтобы ознакомиться с командами""",
+        reply_markup=markup,
+    )
     start_help_back_button(message)
 
+
 # появление кнопки '🔙Назад'
-def start_help_back_button(message):  
+def start_help_back_button(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     back = types.KeyboardButton("🔙Назад")
     markup.add(back)
-    bot.send_message(message.chat.id, "Чтобы откуда угодно попасть в Help, просто нажмите на кнопку '🔙Назад', или напишите слово 'Назад'",reply_markup=markup)
+    bot.send_message(
+        message.chat.id,
+        "Чтобы откуда угодно попасть в Help, просто нажмите на кнопку '🔙Назад', или напишите слово 'Назад'",
+        reply_markup=markup,
+    )
+
 
 # функция Help для получения информации
-@bot.message_handler(commands=["help"])  
+@bot.message_handler(commands=["help"])
 def help(message):
     if not examination_register_and_login_and_status_log_in(message):
         return None
@@ -250,22 +302,40 @@ def help(message):
     help_bttn = types.InlineKeyboardButton(text="🆘help", callback_data="help")
     start_bttn = types.InlineKeyboardButton(text="🚀start", callback_data="start")
 
-    register_bttn = types.InlineKeyboardButton(text="🔐Регистрация", callback_data="register")
+    register_bttn = types.InlineKeyboardButton(
+        text="🔐Регистрация", callback_data="register"
+    )
     login_bttn = types.InlineKeyboardButton(text="🆔Авторизация", callback_data="login")
 
-    add_workout_bttn = types.InlineKeyboardButton(text="➕💪Добавить тренировку", callback_data="add_workout")
-    view_workout_bttn = types.InlineKeyboardButton(text="📋💪Посмотреть тренировки", callback_data="view_workouts")
+    add_workout_bttn = types.InlineKeyboardButton(
+        text="➕💪Добавить тренировку", callback_data="add_workout"
+    )
+    view_workout_bttn = types.InlineKeyboardButton(
+        text="📋💪Посмотреть тренировки", callback_data="view_workouts"
+    )
 
-    set_goal_bttn = types.InlineKeyboardButton(text="➕🎯Установить цель", callback_data="set_goal")
-    view_goals_bttn = types.InlineKeyboardButton(text="📋🎯Посмотреть цели", callback_data="view_goals")
+    set_goal_bttn = types.InlineKeyboardButton(
+        text="➕🎯Установить цель", callback_data="set_goal"
+    )
+    view_goals_bttn = types.InlineKeyboardButton(
+        text="📋🎯Посмотреть цели", callback_data="view_goals"
+    )
 
-    statistics_bttn = types.InlineKeyboardButton(text="📊Статистика", callback_data="statistics")
-    reminder_bttn = types.InlineKeyboardButton(text="📅Напоминания", callback_data="reminder")
+    statistics_bttn = types.InlineKeyboardButton(
+        text="📊Статистика", callback_data="statistics"
+    )
+    reminder_bttn = types.InlineKeyboardButton(
+        text="📅Напоминания", callback_data="reminder"
+    )
 
-    export_data_bttn = types.InlineKeyboardButton(text="📤Экспорт данных", callback_data="export_data")
+    export_data_bttn = types.InlineKeyboardButton(
+        text="📤Экспорт данных", callback_data="export_data"
+    )
     logout_bttn = types.InlineKeyboardButton(text="🔚Выйти", callback_data="logout")
 
-    delete_account_bttn = types.InlineKeyboardButton(text="🗑Удалить аккаунт", callback_data="delete_account")
+    delete_account_bttn = types.InlineKeyboardButton(
+        text="🗑Удалить аккаунт", callback_data="delete_account"
+    )
 
     markup.add(help_bttn, start_bttn)
     markup.add(register_bttn, login_bttn)
@@ -294,7 +364,8 @@ def help(message):
 🔚Выйти — Выход из аккаунта
 🗑Удалить аккаунт — Удаление аккаунта
                     """,
-        reply_markup=markup)
+        reply_markup=markup,
+    )
 
 
 # функция register для регистрации нового пользователя
@@ -303,7 +374,9 @@ def register(message):
     telegram_user_id = str(message.chat.id)
     if Database.search_user_by_telegram_id(telegram_user_id):
         if Database.examination_status_log_in(1, telegram_user_id) is not None:
-            bot.send_message(message.chat.id, "Ура, вы уже зарегистрированы и авторизированы")
+            bot.send_message(
+                message.chat.id, "Ура, вы уже зарегистрированы и авторизированы"
+            )
             return None
         bot.send_message(message.chat.id, "Ура, вы уже зарегистрированы")
         login(message)
@@ -315,7 +388,10 @@ def register(message):
 def register_username(message):  # проверка на уникальность в БД и ввод пароля
     user_name = message.text
     if Database.return_user_by_name(user_name) is not None:
-        bot.send_message(message.chat.id, f"Увы, но пользователь с именем {user_name} уже есть, попробуйте ввести другое имя")
+        bot.send_message(
+            message.chat.id,
+            f"Увы, но пользователь с именем {user_name} уже есть, попробуйте ввести другое имя",
+        )
         bot.register_next_step_handler(message, register_username)
         return None
     bot.send_message(message.chat.id, "А теперь придумайте пароль")
@@ -331,8 +407,9 @@ def register_password(message, user_name):  # хэширование и доба
     bot.send_message(message.chat.id, "Поздравляю! Вы успешно зарегистрировались")
     start(message)
 
+
 # функция login для авторизации пользователя
-@bot.message_handler(commands=["login"])  
+@bot.message_handler(commands=["login"])
 def login(message):  # начало, ввод имени и проверка на наличие записей в БД
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
@@ -342,7 +419,9 @@ def login(message):  # начало, ввод имени и проверка н�
         bot.send_message(message.chat.id, """Увы, но вы не зарегистрированы""")
         register_username(message)
         return None
-    if Database.examination_status_log_in(1, telegram_user_id):  # если пользователь активен
+    if Database.examination_status_log_in(
+        1, telegram_user_id
+    ):  # если пользователь активен
         bot.send_message(message.chat.id, "Ура,  вы уже в аккаунте")
         return None
     bot.send_message(message.chat.id, "Для входа введите имя пользователя")
@@ -355,7 +434,10 @@ def login_username(message):  # проверка имени на совпаде�
         return
     user_name = message.text
     if Database.return_user_by_name(user_name) is None:
-        bot.send_message(message.chat.id, "Увы, но я не нашел пользователя с таким именем, попробуйте вспомнить свое имя")
+        bot.send_message(
+            message.chat.id,
+            "Увы, но я не нашел пользователя с таким именем, попробуйте вспомнить свое имя",
+        )
         bot.register_next_step_handler(message, login_username)
         return None
 
@@ -364,7 +446,9 @@ def login_username(message):  # проверка имени на совпаде�
     bot.register_next_step_handler(message, login_password, user_name)
 
 
-def login_password(message, user_name):  # проверка совпадения пароля и имени и запись в БД со статусом активности 1(true)
+def login_password(
+    message, user_name
+):  # проверка совпадения пароля и имени и запись в БД со статусом активности 1(true)
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
@@ -374,14 +458,20 @@ def login_password(message, user_name):  # проверка совпадения
     if user.user_name == user_name and user.user_password == user_password:
         if user.status_log_in == 0:
             Database.update_status_log_in(1, telegram_user_id)
-        bot.send_message(message.chat.id, f"Ура, вы вошли в аккаунт, добро пожаловать {user_name}")
+        bot.send_message(
+            message.chat.id, f"Ура, вы вошли в аккаунт, добро пожаловать {user_name}"
+        )
         start_help_back_button(message)
         return None
-    bot.send_message(message.chat.id, "Увы, но вы не вошли в аккаунт, неверный пароль, попробуйте ввести его корректно")
+    bot.send_message(
+        message.chat.id,
+        "Увы, но вы не вошли в аккаунт, неверный пароль, попробуйте ввести его корректно",
+    )
     bot.register_next_step_handler(message, login_password, user_name)
 
+
 # функция logout для выхода из аккаунта
-@bot.message_handler(commands=["logout"])  
+@bot.message_handler(commands=["logout"])
 def logout(message):
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
@@ -394,10 +484,14 @@ def logout(message):
     elif user.status_log_in == 0:  # если пользователь не активен
         bot.send_message(message.chat.id, "Вы сейчас не в аккаунте")
         return None
-    elif user.status_log_in == 1:  # если все по плану выход с аккаунта и перевод на доп. сообщение
+    elif (
+        user.status_log_in == 1
+    ):  # если все по плану выход с аккаунта и перевод на доп. сообщение
         Database.update_status_log_in(0, telegram_user_id)
         markup = types.ReplyKeyboardRemove()
-        bot.send_message(message.chat.id, "Вы успешно вышли из аккаунта", reply_markup=markup)
+        bot.send_message(
+            message.chat.id, "Вы успешно вышли из аккаунта", reply_markup=markup
+        )
         logout_finish(message)
 
 
@@ -408,17 +502,24 @@ def logout_finish(message):  # функция для кнопки логин п�
     markup = types.InlineKeyboardMarkup()
     login = types.InlineKeyboardButton(text="🆔Авторизация", callback_data="login")
     markup.add(login)
-    bot.send_message(message.chat.id, "Когда захотите вернуться просто нажмите на кнопку", reply_markup=markup)
+    bot.send_message(
+        message.chat.id,
+        "Когда захотите вернуться просто нажмите на кнопку",
+        reply_markup=markup,
+    )
+
 
 # функция add_workout для добавления тренировки
-@bot.message_handler(commands=["add_workout"])  
+@bot.message_handler(commands=["add_workout"])
 def add_workout(message):  # проверки и начальное сообщение
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
     if not examination_register_and_login_and_status_log_in(message):
         return None
-    bot.send_message(message.chat.id, """Я готов записать вашу тренировку, какой тип?""")
+    bot.send_message(
+        message.chat.id, """Я готов записать вашу тренировку, какой тип?"""
+    )
     bot.register_next_step_handler(message, type_training_register_type)
 
 
@@ -428,25 +529,40 @@ def type_training_register_type(message):  # обработка типа тре�
         return
     global type_training
     type_training = message.text
-    bot.send_message(message.chat.id, """Ого, и сколько вы сожгли каллорий?(только число)""")
+    bot.send_message(
+        message.chat.id, """Ого, и сколько вы сожгли каллорий?(только число)"""
+    )
     bot.register_next_step_handler(message, call_training_register_call)
 
 
-def call_training_register_call(message):  # обработка каллорий и выбор между продолжительность и дистанция
+def call_training_register_call(
+    message,
+):  # обработка каллорий и выбор между продолжительность и дистанция
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
     global call_training
     call_training = message.text
     if not examination_int_type(call_training):
-        bot.send_message(message.chat.id, """Вы должены ввести только целое число, попробуйте еще раз""")
+        bot.send_message(
+            message.chat.id,
+            """Вы должены ввести только целое число, попробуйте еще раз""",
+        )
         bot.register_next_step_handler(message, call_training_register_call)
         return None
     markup = types.InlineKeyboardMarkup()
-    time = types.InlineKeyboardButton(text="⏳Продолжительность(мин)", callback_data="time")
-    distance = types.InlineKeyboardButton(text="📏Дистанция(км)", callback_data="distance")
+    time = types.InlineKeyboardButton(
+        text="⏳Продолжительность(мин)", callback_data="time"
+    )
+    distance = types.InlineKeyboardButton(
+        text="📏Дистанция(км)", callback_data="distance"
+    )
     markup.add(time, distance)
-    bot.send_message(message.chat.id, """Отлично, теперь выбериты что ввести, длительность или дистанцию?""", reply_markup=markup)
+    bot.send_message(
+        message.chat.id,
+        """Отлично, теперь выбериты что ввести, длительность или дистанцию?""",
+        reply_markup=markup,
+    )
 
 
 def processing_time(message):  # если выбрал продолжительность потом переход к описанию
@@ -458,12 +574,17 @@ def processing_time(message):  # если выбрал продолжитель�
     global distance_training
     distance_training = None
     if not examination_int_type(time_training):
-        bot.send_message(message.chat.id, """Вы должены ввести только целое число, попробуйте еще раз""")
+        bot.send_message(
+            message.chat.id,
+            """Вы должены ввести только целое число, попробуйте еще раз""",
+        )
         bot.register_next_step_handler(message, processing_time)
         return None
 
     if not time_training.isdigit():
-        bot.send_message(message.chat.id, """Вы должены ввести только число, попробуйте еще раз""")
+        bot.send_message(
+            message.chat.id, """Вы должены ввести только число, попробуйте еще раз"""
+        )
         bot.register_next_step_handler(message.chat.id, processing_time)
     description(message)
 
@@ -477,7 +598,10 @@ def processing_distance(message):  # если выбрал дистанцию п
     global time_training
     time_training = None
     if not examination_int_type(distance_training):
-        bot.send_message(message.chat.id, """Вы должены ввести только целое число, попробуйте еще раз""")
+        bot.send_message(
+            message.chat.id,
+            """Вы должены ввести только целое число, попробуйте еще раз""",
+        )
         bot.register_next_step_handler(message, processing_distance)
         return None
     description(message)
@@ -491,10 +615,16 @@ def description(message):  # запрос описания
     yes = types.InlineKeyboardButton(text="✅Да", callback_data="Yes")
     no = types.InlineKeyboardButton(text="❌Нет", callback_data="No")
     markup.add(yes, no)
-    bot.send_message(message.chat.id, """Почти готово, есть ли какие заметки к тренировке?""", reply_markup=markup)
+    bot.send_message(
+        message.chat.id,
+        """Почти готово, есть ли какие заметки к тренировке?""",
+        reply_markup=markup,
+    )
 
 
-def processing_yes(message):  # если ответил да, то обработка описания и переход к сохранению
+def processing_yes(
+    message,
+):  # если ответил да, то обработка описания и переход к сохранению
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
@@ -510,27 +640,42 @@ def save_training(message):  # сохранение в БД
     telegram_user_id = str(message.chat.id)
     user = Database.search_user_by_telegram_id(telegram_user_id)
     date_training = datetime.datetime.today().date()
-    training = Training(user.user_name, type_training, date_training, call_training,
-                        time_training, distance_training, description_training,)
+    training = Training(
+        user.user_name,
+        type_training,
+        date_training,
+        call_training,
+        time_training,
+        distance_training,
+        description_training,
+    )
     Database.add_training(training)
     bot.send_message(message.chat.id, """Хорошо, я записал вашу тренировку""")
     check_goal_after_save_training(message, user, type_training)
 
 
-def check_goal_after_save_training(message, user: User, type_training):  # проверка выполнения цели
-    all_goals = Database.get_all_goal_by_user_name_and_type(user.user_name, type_training)
+def check_goal_after_save_training(
+    message, user: User, type_training
+):  # проверка выполнения цели
+    all_goals = Database.get_all_goal_by_user_name_and_type(
+        user.user_name, type_training
+    )
     today = datetime.datetime.today().date()
     if all_goals is None:
         return None
     for goal in all_goals:
         left_distance = int(goal.distance_training)
-        workouts = Database.view_workouts_to_type_and_date(type_training, goal.date_start, goal.date_finish, user.user_name)
+        workouts = Database.view_workouts_to_type_and_date(
+            type_training, goal.date_start, goal.date_finish, user.user_name
+        )
         if workouts is not None:
             for workout in workouts:
                 if workout.distance_training is not None:
                     left_distance -= int(workout.distance_training)
         if left_distance <= 0:
-            left_days = datetime.datetime.strptime(goal.date_finish, "%Y-%m-%d") - datetime.datetime.strptime(str(today), "%Y-%m-%d")
+            left_days = datetime.datetime.strptime(
+                goal.date_finish, "%Y-%m-%d"
+            ) - datetime.datetime.strptime(str(today), "%Y-%m-%d")
             bot.send_message(
                 message.chat.id,
                 f"""
@@ -540,12 +685,14 @@ def check_goal_after_save_training(message, user: User, type_training):  # пр�
 дистанция цели - {goal.distance_training}
 дата окончания - {goal.date_finish}
 осталось дней - {left_days.days}
-""")
+""",
+            )
             Database.delete_goal_if_distance_done(goal)
     return None
 
+
 # функция view_workouts для просмотра тренировок
-@bot.message_handler(commands=["view_workouts"])  
+@bot.message_handler(commands=["view_workouts"])
 def view_workouts(message):  # выбор как смотреть тренировки
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
@@ -558,15 +705,25 @@ def view_workouts(message):  # выбор как смотреть трениро
         bot.send_message(message.chat.id, """Я не нашел у вас тренировок""")
         return None
     markup = types.InlineKeyboardMarkup()
-    type_training = types.InlineKeyboardButton(text="💪посмотреть за тип", callback_data="type_training")
-    date_training = types.InlineKeyboardButton(text="📅посмотреть за период", callback_data="date_training")
-    type_and_date_training = types.InlineKeyboardButton(text="💪📅посмотреть за тип и период", callback_data="type_and_date_training")
-    all_training = types.InlineKeyboardButton(text="📑посмотреть все тренировки", callback_data="all_training")
+    type_training = types.InlineKeyboardButton(
+        text="💪посмотреть за тип", callback_data="type_training"
+    )
+    date_training = types.InlineKeyboardButton(
+        text="📅посмотреть за период", callback_data="date_training"
+    )
+    type_and_date_training = types.InlineKeyboardButton(
+        text="💪📅посмотреть за тип и период", callback_data="type_and_date_training"
+    )
+    all_training = types.InlineKeyboardButton(
+        text="📑посмотреть все тренировки", callback_data="all_training"
+    )
     markup.add(type_training)
     markup.add(date_training)
     markup.add(type_and_date_training)
     markup.add(all_training)
-    bot.send_message(message.chat.id, """Выберите что вы хотите посмотреть""", reply_markup=markup)
+    bot.send_message(
+        message.chat.id, """Выберите что вы хотите посмотреть""", reply_markup=markup
+    )
 
 
 def view_workouts_to_type(message):  # если выбрал тип
@@ -598,9 +755,14 @@ def view_workouts_to_type_print(message):  # вывод тренировок е�
     user_name = user.user_name
     workouts_to_type = Database.view_workouts_to_type(type_training, user_name)
     if workouts_to_type is None:
-        bot.send_message(message.chat.id, f"""Я не нашел у вас тренировок с типом {type_training}""")
+        bot.send_message(
+            message.chat.id, f"""Я не нашел у вас тренировок с типом {type_training}"""
+        )
         return None
-    bot.send_message(message.chat.id, f"""Готово, все тренировки пользователя- {workouts_to_type[0].user_name}, по типу {workouts_to_type[0].type_training}""")
+    bot.send_message(
+        message.chat.id,
+        f"""Готово, все тренировки пользователя- {workouts_to_type[0].user_name}, по типу {workouts_to_type[0].type_training}""",
+    )
     for workouts in workouts_to_type:
         count += 1
         print_text = f"""
@@ -628,14 +790,19 @@ def view_workouts_to_date(message):  # если выбрал период
     bot.register_next_step_handler(message, view_workouts_to_date_register_date)
 
 
-def view_workouts_to_date_register_date(message):  # обработка периода если выбрал период
+def view_workouts_to_date_register_date(
+    message,
+):  # обработка периода если выбрал период
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
     global period_training
     period_training = message.text
     if not examination_int_type(period_training):
-        bot.send_message(message.chat.id, """Вы должены ввести только целое число, попробуйте еще раз""")
+        bot.send_message(
+            message.chat.id,
+            """Вы должены ввести только целое число, попробуйте еще раз""",
+        )
         bot.register_next_step_handler(message, view_workouts_to_date_register_date)
         return None
     view_workouts_to_date_print(message)
@@ -652,10 +819,16 @@ def view_workouts_to_date_print(message):  # вывод тренировок е�
     user_name = user.user_name
     workouts_to_date = Database.view_workouts_to_date(date_start, today, user_name)
     if workouts_to_date is None:
-        bot.send_message(message.chat.id, f"""Я не нашел у вас тренировок за период {period_training} дней""",)
+        bot.send_message(
+            message.chat.id,
+            f"""Я не нашел у вас тренировок за период {period_training} дней""",
+        )
         return None
     count = 0
-    bot.send_message(message.chat.id, f"""Готово, все тренировки пользователя- {workouts_to_date[0].user_name}, с {date_start}""")
+    bot.send_message(
+        message.chat.id,
+        f"""Готово, все тренировки пользователя- {workouts_to_date[0].user_name}, с {date_start}""",
+    )
     for workouts in workouts_to_date:
         count += 1
         print_text = f"""
@@ -680,33 +853,48 @@ def view_workouts_to_type_and_date(message):  # если выбрал тип и 
         handle_button(message)
         return
     bot.send_message(message.chat.id, """Хорошо, какой тип тренировки?""")
-    bot.register_next_step_handler(message, view_workouts_to_type_and_date_register_type)
+    bot.register_next_step_handler(
+        message, view_workouts_to_type_and_date_register_type
+    )
 
 
-def view_workouts_to_type_and_date_register_type(message):  # обработка типа и запрос периода если выбрал тип и период
+def view_workouts_to_type_and_date_register_type(
+    message,
+):  # обработка типа и запрос периода если выбрал тип и период
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
     global type_training
     type_training = message.text
     bot.send_message(message.chat.id, """Запомнил, какой промежуток времени?""")
-    bot.register_next_step_handler(message, view_workouts_to_type_and_date_register_period)
+    bot.register_next_step_handler(
+        message, view_workouts_to_type_and_date_register_period
+    )
 
 
-def view_workouts_to_type_and_date_register_period(message):  # обработка периода если выбрал тип и период
+def view_workouts_to_type_and_date_register_period(
+    message,
+):  # обработка периода если выбрал тип и период
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
     global period_training
     period_training = message.text
     if not examination_int_type(period_training):
-        bot.send_message(message.chat.id, """Вы должены ввести только целое число, попробуйте еще раз""")
-        bot.register_next_step_handler(message, view_workouts_to_type_and_date_register_period)
+        bot.send_message(
+            message.chat.id,
+            """Вы должены ввести только целое число, попробуйте еще раз""",
+        )
+        bot.register_next_step_handler(
+            message, view_workouts_to_type_and_date_register_period
+        )
         return None
     view_workouts_to_type_and_date_print(message)
 
 
-def view_workouts_to_type_and_date_print(message):  # вывод тренировок если выбрал тип и период
+def view_workouts_to_type_and_date_print(
+    message,
+):  # вывод тренировок если выбрал тип и период
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
@@ -715,13 +903,20 @@ def view_workouts_to_type_and_date_print(message):  # вывод трениро�
     telegram_user_id = str(message.chat.id)
     user = Database.search_user_by_telegram_id(telegram_user_id)
     user_name = user.user_name
-    workouts_to_type_and_date = Database.view_workouts_to_type_and_date(type_training, date_start, today, user_name)
+    workouts_to_type_and_date = Database.view_workouts_to_type_and_date(
+        type_training, date_start, today, user_name
+    )
     if workouts_to_type_and_date is None:
-        bot.send_message(message.chat.id, f"""Я не нашел у вас тренировок с типом {type_training} с {date_start}""")
+        bot.send_message(
+            message.chat.id,
+            f"""Я не нашел у вас тренировок с типом {type_training} с {date_start}""",
+        )
         return None
     count = 0
-    bot.send_message(message.chat.id,
-        f"""Готово, все тренировки пользователя- {workouts_to_type_and_date[0].user_name}, по типу {workouts_to_type_and_date[0].type_training} с {date_start}""")
+    bot.send_message(
+        message.chat.id,
+        f"""Готово, все тренировки пользователя- {workouts_to_type_and_date[0].user_name}, по типу {workouts_to_type_and_date[0].type_training} с {date_start}""",
+    )
     for workouts in workouts_to_type_and_date:
         count += 1
         print_text = f"""
@@ -752,7 +947,9 @@ def view_workouts_to_all(message):  # просмотр всех трениров
         bot.send_message(message.chat.id, """Я не нашел у вас тренировок""")
         return None
     count = 0
-    bot.send_message(message.chat.id, f"""Готово, все тренировки пользователя- {user.user_name}""")
+    bot.send_message(
+        message.chat.id, f"""Готово, все тренировки пользователя- {user.user_name}"""
+    )
     for workouts in all_trainings:
         count += 1
         print_text = f"""
@@ -772,8 +969,9 @@ def view_workouts_to_all(message):  # просмотр всех трениров
 """
         bot.send_message(message.chat.id, print_text)
 
+
 # функция set_goal для установки цели
-@bot.message_handler(commands=["set_goal"])  
+@bot.message_handler(commands=["set_goal"])
 def set_goal(message):  # запрос типа
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
@@ -801,7 +999,10 @@ def set_goal_register_distance(message):  # обработка дистанци�
     global distance_training
     distance_training = message.text
     if not examination_int_type(distance_training):
-        bot.send_message(message.chat.id, """Вы должны ввести только целое число, попробуйте еще раз""")
+        bot.send_message(
+            message.chat.id,
+            """Вы должны ввести только целое число, попробуйте еще раз""",
+        )
         bot.register_next_step_handler(message, set_goal_register_distance)
         return None
     bot.send_message(message.chat.id, """Сколько дней на выполнение цели?""")
@@ -815,7 +1016,10 @@ def set_goal_register_date_finish(message):  # обработка периода
     global period_training
     period_training = message.text
     if not examination_int_type(period_training):
-        bot.send_message(message.chat.id, """Вы должен ввести только целое число, попробуйте еще раз""")
+        bot.send_message(
+            message.chat.id,
+            """Вы должен ввести только целое число, попробуйте еще раз""",
+        )
         bot.register_next_step_handler(message, set_goal_register_date_finish)
         return None
     bot.send_message(message.chat.id, """Отлично, я записал""")
@@ -834,8 +1038,9 @@ def set_goal_save(message):  # сохранение данных о целе в 
     goal = Goal(user_name, date_start, type_training, distance_training, date_finish)
     Database.set_goal(goal)
 
+
 # функция view_goals для просмотра целей и их прогресса
-@bot.message_handler(commands=["view_goals"])  
+@bot.message_handler(commands=["view_goals"])
 def view_goals(message):
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
@@ -850,15 +1055,21 @@ def view_goals(message):
     if all_goals is None:
         bot.send_message(message.chat.id, """Я не нашел у вас целей""")
         return None
-    bot.send_message(message.chat.id, f"""Готово, все цели пользователя - {user.user_name}:""")
+    bot.send_message(
+        message.chat.id, f"""Готово, все цели пользователя - {user.user_name}:"""
+    )
     for goal in all_goals:
         left_distance = int(goal.distance_training)
-        workouts = Database.view_workouts_to_type_and_date(goal.type_training, goal.date_start, goal.date_finish, user.user_name)
+        workouts = Database.view_workouts_to_type_and_date(
+            goal.type_training, goal.date_start, goal.date_finish, user.user_name
+        )
         if workouts is not None:
             for workout in workouts:
                 if workout.distance_training is not None:
                     left_distance -= int(workout.distance_training)
-        left_days = datetime.datetime.strptime(goal.date_finish, "%Y-%m-%d") - datetime.datetime.strptime(str(today), "%Y-%m-%d")
+        left_days = datetime.datetime.strptime(
+            goal.date_finish, "%Y-%m-%d"
+        ) - datetime.datetime.strptime(str(today), "%Y-%m-%d")
         count += 1
         print_text = f"""
 {count}:
@@ -870,6 +1081,7 @@ def view_goals(message):
 осталось дней - {left_days.days}
 """
         bot.send_message(message.chat.id, print_text)
+
 
 # функция statistics для просмотра статистики (картинка-график)
 @bot.message_handler(commands=["statistics"])
@@ -896,7 +1108,9 @@ def statistics(message):
 
     today = datetime.date.today()
     today_month = today.replace(day=1)
-    start_month = add_months(today_month, -11)  # Начинаем с 11 месяцев назад (включая текущий)
+    start_month = add_months(
+        today_month, -11
+    )  # Начинаем с 11 месяцев назад (включая текущий)
 
     months = []
     current = start_month
@@ -934,8 +1148,9 @@ def statistics(message):
     with open("stistic.png", "rb") as photo:
         bot.send_photo(message.chat.id, photo)
 
+
 # функция reminder для работы с напоминаниями
-@bot.message_handler(commands=["reminder"])  
+@bot.message_handler(commands=["reminder"])
 def reminder(message):
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
@@ -949,10 +1164,18 @@ def reminder(message):
 
     if Database.get_all_reminder_by_user_name(user_name) is not None:
         markup = types.InlineKeyboardMarkup()
-        add_reminder_bttn = types.InlineKeyboardButton(text="⏰Добавить напоминание", callback_data="add_reminder")
-        del_reminder_bttn = types.InlineKeyboardButton(text="🗑Удалить напоминание", callback_data="del_reminder")
+        add_reminder_bttn = types.InlineKeyboardButton(
+            text="⏰Добавить напоминание", callback_data="add_reminder"
+        )
+        del_reminder_bttn = types.InlineKeyboardButton(
+            text="🗑Удалить напоминание", callback_data="del_reminder"
+        )
         markup.add(add_reminder_bttn, del_reminder_bttn)
-        bot.send_message(message.chat.id, "Вы хотите удалить или добавить напоминания?", reply_markup=markup)
+        bot.send_message(
+            message.chat.id,
+            "Вы хотите удалить или добавить напоминания?",
+            reply_markup=markup,
+        )
     else:
         add_reminder(message)
 
@@ -975,29 +1198,36 @@ def add_reminder(message):
     saturday = types.InlineKeyboardButton(text="📅🟫Суббота", callback_data="saturday")
 
     sunday = types.InlineKeyboardButton(text="📅⬛Воскресенье", callback_data="sunday")
-    finish_reminder = types.InlineKeyboardButton(text="📅🛑Это все", callback_data="finish_reminder")
+    finish_reminder = types.InlineKeyboardButton(
+        text="📅🛑Это все", callback_data="finish_reminder"
+    )
 
     markup.add(monday, tuesday)
     markup.add(wednesday, thursday)
     markup.add(friday, saturday)
     markup.add(sunday, finish_reminder)
 
-    bot.send_message(message.chat.id, "Выберите дни в которые нужны напоминания", reply_markup=markup)
+    bot.send_message(
+        message.chat.id, "Выберите дни в которые нужны напоминания", reply_markup=markup
+    )
 
 
-def processing_day(day_int):# добавление выбранного дня в список дней
+def processing_day(day_int):  # добавление выбранного дня в список дней
     global days_lst
     days_lst.append(day_int)
 
 
-def processing_time_reminder(message): #обработка введенного времени
+def processing_time_reminder(message):  # обработка введенного времени
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
     global time_reminder
     time_reminder = message.text
     if not examination_date_type(time_reminder):
-        bot.send_message(message.chat.id, "Введите время в формате (часы:минуты), например(8:8/18:00/08:08)")
+        bot.send_message(
+            message.chat.id,
+            "Введите время в формате (часы:минуты), например(8:8/18:00/08:08)",
+        )
         bot.register_next_step_handler(message, processing_time_reminder)
         return None
     telegram_user_id = str(message.chat.id)
@@ -1009,18 +1239,22 @@ def processing_time_reminder(message): #обработка введенного 
     bot.send_message(message.chat.id, "Я буду вам напоминать")
 
 
-def del_reminder(message):#удаление напоминания вопрос уверенности
+def del_reminder(message):  # удаление напоминания вопрос уверенности
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
     markup = types.InlineKeyboardMarkup()
-    del_reminder_yes = types.InlineKeyboardButton(text="✅да", callback_data="del_reminder_yes")
-    del_reminder_no = types.InlineKeyboardButton(text="❌нет", callback_data="del_reminder_no")
+    del_reminder_yes = types.InlineKeyboardButton(
+        text="✅да", callback_data="del_reminder_yes"
+    )
+    del_reminder_no = types.InlineKeyboardButton(
+        text="❌нет", callback_data="del_reminder_no"
+    )
     markup.add(del_reminder_yes, del_reminder_no)
     bot.send_message(message.chat.id, """Вы уверены?""", reply_markup=markup)
 
 
-def processing_del_reminder_yes(message):#если выбрал да, удаление всех напоминаний
+def processing_del_reminder_yes(message):  # если выбрал да, удаление всех напоминаний
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
@@ -1030,8 +1264,9 @@ def processing_del_reminder_yes(message):#если выбрал да, удале
     Database.delete_reminder(user_name)
     bot.send_message(message.chat.id, """Все ваши напоминания удалены""")
 
+
 # функция export_data для возвращения файла csv с данными
-@bot.message_handler(commands=["export_data"])  
+@bot.message_handler(commands=["export_data"])
 def export_data(message):
     if not examination_register_and_login_and_status_log_in(message):
         return None
@@ -1050,26 +1285,32 @@ def export_data(message):
             "Каллории": workout.call_training,
             "Продолжительность": workout.time_training,
             "Дистанция": workout.distance_training,
-            "Заметка": workout.description_training
-            }
+            "Заметка": workout.description_training,
+        }
         trainings_lst.append(trainings_lib)
     csv_filename = "training.csv"
-    fieldnames = ["Тип тренировки", "Дата тренировки", "Каллории",
-            "Продолжительность", "Дистанция", "Заметка"]
-    with open(csv_filename, "w", newline="", encoding='utf-8-sig') as file:
-
+    fieldnames = [
+        "Тип тренировки",
+        "Дата тренировки",
+        "Каллории",
+        "Продолжительность",
+        "Дистанция",
+        "Заметка",
+    ]
+    with open(csv_filename, "w", newline="", encoding="utf-8-sig") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=";")
         writer.writeheader()
         writer.writerows(trainings_lst)
     send_csv_file(telegram_user_id, csv_filename)
 
 
-def send_csv_file(telegram_user_id, csv_filename):#отправка пользователю файла
+def send_csv_file(telegram_user_id, csv_filename):  # отправка пользователю файла
     doc = open(csv_filename, "rb")
     bot.send_document(telegram_user_id, doc)
 
+
 # функция для удаления аккаунта
-@bot.message_handler(commands=["delete_account"])  
+@bot.message_handler(commands=["delete_account"])
 def delete_account(message):  # вопрос уверенности
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
@@ -1091,10 +1332,16 @@ def processing_del_yes(message):  # второй вопрос увереннос
     del_yes_2 = types.InlineKeyboardButton(text="✅да", callback_data="del_yes_2")
     del_no_2 = types.InlineKeyboardButton(text="❌нет", callback_data="del_no_2")
     markup.add(del_yes_2, del_no_2)
-    bot.send_message(message.chat.id, """Вы потеряете все записи о себе, может все таки останетесь?""", reply_markup=markup)
+    bot.send_message(
+        message.chat.id,
+        """Вы потеряете все записи о себе, может все таки останетесь?""",
+        reply_markup=markup,
+    )
 
 
-def processing_del_no_2(message):  # удаление аккаунта и кнопки "🔙Назад" если во втором вопросе ответ "нет"
+def processing_del_no_2(
+    message,
+):  # удаление аккаунта и кнопки "🔙Назад" если во втором вопросе ответ "нет"
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
@@ -1103,18 +1350,31 @@ def processing_del_no_2(message):  # удаление аккаунта и кно
     user_name = user.user_name
     Database.delete_account(user_name)
     markup = types.ReplyKeyboardRemove()
-    bot.send_message( message.chat.id, """Мне очень грустно что вы уходите, но я всегда жду вас обратно""", reply_markup=markup)
+    bot.send_message(
+        message.chat.id,
+        """Мне очень грустно что вы уходите, но я всегда жду вас обратно""",
+        reply_markup=markup,
+    )
     processing_del_finish(message)
 
 
-def processing_del_finish(message):  # дополнительное сообщение для возможности зарегистрироваться
+def processing_del_finish(
+    message,
+):  # дополнительное сообщение для возможности зарегистрироваться
     if message.text == "🔙Назад" or message.text == "Назад":
         handle_button(message)
         return
     markup = types.InlineKeyboardMarkup()
-    register = types.InlineKeyboardButton(text="🔐Регистрация", callback_data="register")
+    register = types.InlineKeyboardButton(
+        text="🔐Регистрация", callback_data="register"
+    )
     markup.add(register)
-    bot.send_message(message.chat.id, """Если захотите вернуться, просто нажмите на кнопку""", reply_markup=markup,)
+    bot.send_message(
+        message.chat.id,
+        """Если захотите вернуться, просто нажмите на кнопку""",
+        reply_markup=markup,
+    )
+
 
 # проверка на наличие напоминания в данную минуту данного дня(второй поток, каждую минуту)
 def check_reminder_every_minutes():
@@ -1125,16 +1385,22 @@ def check_reminder_every_minutes():
         all_reminders = Database.get_all_reminder()
         if all_reminders is not None:
             for reminder in all_reminders:
-
-                if (int(reminder.day_reminder) == today and reminder.time_reminder == time_now):
+                if (
+                    int(reminder.day_reminder) == today
+                    and reminder.time_reminder == time_now
+                ):
                     user = Database.return_user_by_name(reminder.user_name)
                     if user.status_log_in == 1:
-                        bot.send_message(user.telegram_user_id, "⏰Напоминание! Я не забываю отправлять вам напоминания")
+                        bot.send_message(
+                            user.telegram_user_id,
+                            "⏰Напоминание! Я не забываю отправлять вам напоминания",
+                        )
                     else:
                         return None
         time.sleep(60)
 
-#проверка на невыполненность цели каждый час
+
+# проверка на невыполненность цели каждый час
 def check_goals_every_minutes():
     while True:
         now = datetime.datetime.now()
@@ -1145,7 +1411,10 @@ def check_goals_every_minutes():
                 if goal.date_finish == today:
                     user = Database.return_user_by_name(goal.user_name)
                     if user.status_log_in == 1:
-                        bot.send_message(user.telegram_user_id, "Мне очень жаль, вы не выполнили свою цель")
+                        bot.send_message(
+                            user.telegram_user_id,
+                            "Мне очень жаль, вы не выполнили свою цель",
+                        )
                         print_text = f"""
 дата установки цели - {goal.date_start}
 тип тренировки - {goal.type_training}
@@ -1153,7 +1422,9 @@ def check_goals_every_minutes():
 дата окончания - {goal.date_finish}
 """
                         bot.send_message(user.telegram_user_id, print_text)
-                        Database.delete_goal_if_today_is_day_finish(goal.user_name, today)
+                        Database.delete_goal_if_today_is_day_finish(
+                            goal.user_name, today
+                        )
                     else:
                         return None
         time.sleep(3600)
@@ -1163,11 +1434,15 @@ def check_goals_every_minutes():
 def message_reply(message):
     text = message.text
     if text != "🔙Назад" and text != "Назад":
-        bot.send_message(message.chat.id, "Я не понял что вы хотели, возможно вы хотели нажать на кнопку?")
+        bot.send_message(
+            message.chat.id,
+            "Я не понял что вы хотели, возможно вы хотели нажать на кнопку?",
+        )
 
-#запуск второго (фонового) потока для проверки напоминаний каждую минуту
-threading.Thread(target=check_reminder_every_minutes, daemon=True).start() 
-#запуск третьего (фонового) потока для проверки актуальности целей каждую минуту
-threading.Thread(target=check_goals_every_minutes, daemon=True).start() 
-#запуск основного потока для работы бота
+
+# запуск второго (фонового) потока для проверки напоминаний каждую минуту
+threading.Thread(target=check_reminder_every_minutes, daemon=True).start()
+# запуск третьего (фонового) потока для проверки актуальности целей каждую минуту
+threading.Thread(target=check_goals_every_minutes, daemon=True).start()
+# запуск основного потока для работы бота
 bot.infinity_polling()
