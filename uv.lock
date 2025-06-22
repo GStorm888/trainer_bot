@@ -44,7 +44,7 @@ wheels = [
 
 [[package]]
 name = "pytelegrambotapi"
-version = "4.12.0"
+version = "4.27.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "requests" },
@@ -79,7 +79,7 @@ wheels = [
 ]
 
 [[package]]
-name = "trainer_bot"
+name = "web-project"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
