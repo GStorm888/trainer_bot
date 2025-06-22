@@ -15,7 +15,9 @@ from user import Goal, Reminder, Training, User
 
 bot = TeleBot(TOKEN)  # создание бота через токен
 
-
+@bot.message_handler(commands=["test"])
+def test(message):
+    Database.create_table()
 # проверка текста на формат времени
 def examination_date_type(user_time):
     time_format = "%H:%M"
