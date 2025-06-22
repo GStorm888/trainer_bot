@@ -48,7 +48,7 @@
    
 3. Установите зависимости:
    ```bash
-   pip install -r requirements.txt
+   uv sync
    ```
 
 4. Укажите ваш Telegram Bot Token в файле `config` или напрямую в коде:
@@ -58,7 +58,7 @@
 
 5. Запустите бота:
    ```bash
-   python trainer_bot.py
+   uv run trainer_bot.py
    ```
 
 ---
